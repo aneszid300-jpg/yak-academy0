@@ -1,0 +1,64 @@
+/* =========================================================
+   Auth pages — the few visuals kept as CSS.
+   Everything else is Tailwind in Login.jsx / Register.jsx.
+   ========================================================= */
+
+/* ---------- body (legacy login.html / register.html <body>) ---------- */
+body.yak-scope-login,
+body.yak-scope-register {
+  font-family: var(--font-auth);
+  overflow-x: hidden;
+}
+
+body.yak-scope-login {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ---------- login: brand panel ---------- */
+.auth-brand-panel {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, .13), transparent 32%),
+    radial-gradient(circle at 85% 85%, rgba(250, 204, 21, .14), transparent 25%),
+    linear-gradient(145deg, #4D2F91, #6C43C5 55%, #7B4FE0);
+}
+.auth-brand-panel::before {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  top: -100px;
+  left: -90px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 50%;
+}
+.auth-brand-panel::after {
+  content: "";
+  position: absolute;
+  width: 340px;
+  height: 340px;
+  right: -180px;
+  bottom: -170px;
+  border: 1px solid rgba(255, 255, 255, .10);
+  border-radius: 50%;
+}
+
+/* ---------- register: card entrance ---------- */
+@keyframes yak-card-appear {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- register: reduced motion (legacy rule, scoped to the page) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  body.yak-scope-register *,
+  body.yak-scope-register *::before,
+  body.yak-scope-register *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

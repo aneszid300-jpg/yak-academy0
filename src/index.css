@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+@import "./styles/auth.css";
+@import "./styles/landing.css";
+@import "./styles/dashboard.css";
+@import "./styles/dashboard-home.css";
+@import "./styles/todo-modals.css";
+@import "./styles/courses.css";
+@import "./styles/study.css";
+@import "./styles/todos.css";
+@import "./styles/focus.css";
+@import "./styles/library.css";
+@import "./styles/ai.css";
+@import "./styles/viewer.css";
+@import "./styles/pdf.css";
+@import "./styles/flash.css";
+@import "./styles/settings.css";
+@import "./styles/payment.css";
+@import "./styles/wallet.css";
+
+/* Theme is driven by <html data-theme="dark">, same as the legacy pages. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Tailwind utilities read the legacy CSS variables, so every utility
+   follows light/dark automatically: bg-card-bg, text-primary-violet, … */
+@theme inline {
+  --color-primary-violet: var(--primary-violet);
+  --color-electric-violet: var(--electric-violet);
+  --color-sunlit-yellow: var(--sunlit-yellow);
+  --color-lavender-mist: var(--lavender-mist);
+  --color-warm-ivory: var(--warm-ivory);
+
+  --color-bg-main: var(--bg-main);
+  --color-card-bg: var(--card-bg);
+  --color-card-solid: var(--card-solid);
+  --color-card-border: var(--card-border);
+
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-text-light: var(--text-light);
+
+  --color-hero-bg: var(--hero-bg);
+  --color-hero-border: var(--hero-border);
+  --color-search-bg: var(--search-bg);
+  --color-hover-nav-bg: var(--hover-nav-bg);
+  --color-ai-card-border: var(--ai-card-border);
+  --color-footer-border: var(--footer-border);
+  --color-btn-outline-bg: var(--btn-outline-bg);
+
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+
+  --font-yak: var(--font-yak);
+  --font-auth: var(--font-auth);
+}
+
+/* Radii and shadows are used as arbitrary-value utilities, e.g.
+   rounded-(--radius-card), shadow-(--shadow-subtle).
+   They're not mapped into @theme because the token names already
+   collide with Tailwind's own --radius-* / --shadow-* namespace. */
+
+@layer base {
+  /* The legacy pages had no Tailwind preflight; restore the browser
+     defaults they were designed against. Explicit utilities still win. */
+  html {
+    scroll-behavior: smooth;
+    line-height: normal;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit; /* every legacy page set this */
+    font-size: 13.333px;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: normal;
+  }
+
+  body {
+    min-height: 100vh;
+    font-family: var(--font-yak);
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Tailwind preflight makes <img> block-level; the legacy pages relied on
+     the browser default (inline). Keep the original behavior. */
+  img,
+  svg,
+  video {
+    display: inline;
+    vertical-align: baseline;
+  }
+}

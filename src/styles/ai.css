@@ -1,0 +1,11 @@
+/* =========================================================
+   باك AI — the deck board reuses the legacy sticker-notebook
+   styles from courses.css (legacy shares them too). Only the
+   page wrapper lives here.
+   ========================================================= */
+
+.ai-page {
+  flex: 1 0 auto;
+  width: 100%;
+  animation: yak-page-in .25s ease;
+}

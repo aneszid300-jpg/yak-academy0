@@ -1,0 +1,112 @@
+/* =========================================================
+   Flashcards (بطاقات المراجعة · QCM) — rules copied from
+   legacy/dashboard.html (#page-flash), in legacy source order.
+   The side list reuses .study-lesson-info / .study-lesson-name
+   (study.css) and the buttons .btn-outline / .btn-violet
+   (dashboard-home.css), exactly as legacy does. The unused legacy
+   flip-card rules (.flash-flip, .flash-face…) are not migrated:
+   legacy replaced flipping with QCM («بدل قلب البطاقة»).
+   ========================================================= */
+
+.flash-page {
+  flex: 1 0 auto;
+  width: 100%;
+  animation: yak-page-in .25s ease;
+}
+
+/* earlier, generic rule — the later one below overrides parts of it */
+.flash-progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--primary-violet), var(--electric-violet));
+}
+
+/* .viewer-page-wrap / .viewer-topbar / .viewer-back-btn … are shared with
+   the PDF viewer and live in viewer.css. */
+
+.flash-study-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; direction: ltr; align-items: start; }
+.flash-side { direction: rtl; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 14px; box-shadow: var(--shadow-subtle); max-height: calc(100vh - 120px); overflow: auto; position: sticky; top: 16px; }
+.flash-main { direction: rtl; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.flash-progress-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.flash-progress-bar { flex: 1; height: 8px; border-radius: 99px; background: var(--lavender-mist); overflow: hidden; }
+.flash-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-violet), var(--electric-violet)); transition: width 0.3s ease; }
+.flash-nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.flash-deck-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: right; border: 1px solid transparent; background: transparent; border-radius: 12px; padding: 10px 12px; cursor: pointer; font-family: inherit; color: var(--text-main); margin-bottom: 4px; }
+.flash-deck-item:hover { background: var(--hover-nav-bg); }
+.flash-deck-item.active { background: var(--lavender-mist); color: var(--primary-violet); font-weight: 800; }
+@media (max-width: 900px) {
+  .flash-study-layout { grid-template-columns: 1fr !important; }
+  .flash-side { position: static !important; max-height: 220px; order: 2; }
+  .flash-main { order: 1; }
+}
+
+/* ---------- QCM (بدل قلب البطاقة) ---------- */
+.qcm-question-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 22px;
+  padding: 22px 20px;
+  box-shadow: var(--shadow-subtle);
+  direction: rtl;
+}
+.qcm-q-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--electric-violet);
+  background: var(--lavender-mist);
+  padding: 4px 12px;
+  border-radius: 99px;
+  margin-bottom: 12px;
+}
+.qcm-question-text {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+.qcm-choices { display: flex; flex-direction: column; gap: 10px; }
+.qcm-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: right;
+  border: 1.5px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+[data-theme="dark"] .qcm-choice { background: rgba(255, 255, 255, 0.04); }
+.qcm-choice:hover:not(:disabled) { border-color: var(--electric-violet); background: var(--hover-nav-bg); }
+.qcm-choice-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--lavender-mist);
+  color: var(--primary-violet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.qcm-choice.selected { border-color: var(--electric-violet); box-shadow: 0 0 0 3px rgba(123, 79, 224, 0.12); }
+.qcm-choice.correct { border-color: #10B981; background: rgba(16, 185, 129, 0.12); color: #047857; }
+.qcm-choice.correct .qcm-choice-letter { background: #10B981; color: #fff; }
+.qcm-choice.wrong { border-color: #EF4444; background: rgba(239, 68, 68, 0.1); color: #B91C1C; }
+.qcm-choice.wrong .qcm-choice-letter { background: #EF4444; color: #fff; }
+.qcm-choice:disabled { cursor: default; }
+.qcm-feedback { margin-top: 14px; padding: 12px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; display: none; }
+.qcm-feedback.show { display: block; }
+.qcm-feedback.ok { background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.25); }
+.qcm-feedback.bad { background: rgba(239, 68, 68, 0.1); color: #B91C1C; border: 1px solid rgba(239, 68, 68, 0.25); }
+.qcm-score { font-size: 13px; font-weight: 800; color: var(--electric-violet); }

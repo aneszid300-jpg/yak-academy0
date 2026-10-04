@@ -1,0 +1,50 @@
+/* =========================================================
+   محفظتي — new: the student's purchase centre, drawn in the same
+   payment sheet (payment.css) with stats, units and history.
+   ========================================================= */
+
+.wallet-body { display: flex; flex-direction: column; gap: 22px; }
+.wallet-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.wallet-stat { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--card-border); border-radius: 14px; background: var(--btn-outline-bg); min-width: 0; }
+.wallet-stat-label { font-size: 11.5px; font-weight: 800; color: var(--text-muted); }
+.wallet-stat-value { font-size: 20px; font-weight: 900; color: var(--text-main); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 760px) { .wallet-stats { grid-template-columns: minmax(0, 1fr); } }
+
+.wallet-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.wallet-section-title { margin: 0; font-size: 15px; font-weight: 900; color: var(--text-main); }
+.wallet-section-meta { font-size: 11.5px; font-weight: 700; color: var(--text-muted); }
+
+/* units */
+.wallet-units { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 1000px) { .wallet-units { grid-template-columns: minmax(0, 1fr); } }
+.wallet-unit { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--card-border); border-radius: 16px; background: var(--card-bg); min-width: 0; }
+.wallet-unit-img { width: 64px; height: 64px; flex: 0 0 64px; border-radius: 12px; object-fit: cover; display: block; background: var(--lavender-mist); }
+.wallet-unit-info { flex: 1; min-width: 0; }
+.wallet-unit-title { font-size: 14px; font-weight: 900; color: var(--text-main); line-height: 1.4; }
+.wallet-unit-facts { display: flex; gap: 4px 12px; flex-wrap: wrap; margin-top: 4px; font-size: 11.5px; font-weight: 700; color: var(--text-muted); }
+.wallet-unit-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex: 0 0 auto; }
+.wallet-unit-side .payment-chip, .wallet-row-end .payment-chip { margin-top: 0; }
+.wallet-unit-side .payment-btn { min-height: 38px; padding: 8px 14px; font-size: 12px; }
+@media (max-width: 480px) {
+  .wallet-unit { flex-wrap: wrap; }
+  .wallet-unit-side { width: 100%; flex-direction: row; align-items: center; justify-content: space-between; }
+}
+
+/* history */
+.wallet-history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.wallet-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 14px; background: var(--btn-outline-bg); min-width: 0; }
+.wallet-row-main { flex: 1; min-width: 0; }
+.wallet-row-title { font-size: 13px; font-weight: 900; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wallet-row-sub { font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 2px; }
+.wallet-row-end { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: 0 0 auto; }
+.wallet-row-amount { font-size: 13.5px; font-weight: 900; color: var(--text-main); white-space: nowrap; }
+
+/* empty */
+.wallet-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 26px 10px 14px; text-align: center; }
+.wallet-empty-icon { width: 68px; height: 68px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--lavender-mist); color: var(--primary-violet); margin-bottom: 6px; }
+[data-theme="dark"] .wallet-empty-icon { color: #C4B5FD; }
+.wallet-empty-title { font-size: 18px; font-weight: 900; color: var(--text-main); }
+.wallet-empty-text { margin: 0 0 8px; max-width: 400px; font-size: 12.5px; font-weight: 600; color: var(--text-muted); line-height: 1.8; }
+
+.wallet-shop { white-space: nowrap; }
+@media (max-width: 620px) { .wallet-shop { width: 100%; } }

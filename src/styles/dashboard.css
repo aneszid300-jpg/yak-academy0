@@ -1,0 +1,248 @@
+/* =========================================================
+   Dashboard shell — sidebar.
+   Rules copied from legacy/dashboard.html (same class names,
+   same order, so the hover/active/collapsed precedence matches).
+   The layout, top navbar and footer use Tailwind.
+   ========================================================= */
+
+.sidebar {
+  width: 248px;
+  flex-shrink: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 18px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 32px);
+  position: sticky;
+  top: 16px;
+  box-shadow: var(--shadow-subtle);
+  transition: width .3s, padding .3s, background .3s, border-color .3s;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px 4px 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+.sidebar-header-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
+.logo-container { display: flex; align-items: center; gap: 10px; padding: 0 4px; white-space: nowrap; }
+.logo-img { height: 36px; width: auto; max-width: 140px; object-fit: contain; object-position: left center; }
+
+.toggle-sidebar-btn {
+  background: var(--lavender-mist);
+  border: 1px solid rgba(123, 79, 224, .18);
+  color: var(--primary-violet);
+  min-width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .22s;
+  box-shadow: 0 1px 3px rgba(91, 58, 166, .06);
+  position: relative;
+  overflow: hidden;
+}
+.toggle-sidebar-btn:hover {
+  background: var(--electric-violet);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(123, 79, 224, .28);
+  transform: translateY(-1px);
+}
+.toggle-sidebar-btn svg.toggle-panel-icon {
+  width: 18px; height: 18px;
+  stroke: currentColor; stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round;
+  transition: opacity .2s, transform .2s;
+}
+.toggle-sidebar-btn .toggle-logo-img { display: none; width: 32px; height: 32px; object-fit: cover; object-position: 8% center; border-radius: 8px; }
+
+.nav-menu { list-style: none; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.nav-item { position: relative; }
+.nav-item a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13.5px;
+  border-radius: var(--radius-btn);
+  transition: all .2s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.nav-item.active a { background: var(--lavender-mist); color: var(--primary-violet); font-weight: 800; }
+.nav-item a:hover { background: var(--hover-nav-bg); color: var(--electric-violet); }
+.nav-item-parent > a { position: relative; }
+
+.sidebar-footer { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--card-border); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 12px; }
+.sidebar-user-name { font-size: 13px; font-weight: 800; color: var(--text-main); }
+.sidebar-user-role { font-size: 11px; color: var(--text-muted); }
+
+.sidebar-top-actions { display: flex; align-items: center; justify-content: flex-start; gap: 4px; padding: 0 4px; width: 100%; }
+.sidebar-icon-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #9CA3AF;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .2s;
+  flex-shrink: 0;
+  position: relative;
+  padding: 0;
+}
+.sidebar-icon-btn:hover { color: var(--primary-violet); background: var(--lavender-mist); }
+.sidebar-icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; }
+.sidebar-icon-btn .notif-dot {
+  position: absolute; top: 6px; left: 6px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #EF4444; border: 1.5px solid var(--card-bg);
+  pointer-events: none;
+}
+
+.nav-chevron { margin-right: auto; transition: transform .25s; opacity: .7; flex-shrink: 0; }
+.nav-submenu {
+  list-style: none;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0 4px 8px;
+  margin: 2px 14px 4px 0;
+  border-right: 2px solid var(--lavender-mist);
+}
+.nav-subitem a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12.5px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.nav-subitem a:hover { background: var(--hover-nav-bg); color: var(--electric-violet); }
+.nav-icon { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; min-width: 18px; }
+
+[data-theme="dark"] .toggle-sidebar-btn { background: rgba(139, 92, 246, .15); border-color: rgba(167, 139, 250, .25); color: #C4B5FD; }
+[data-theme="dark"] .toggle-sidebar-btn:hover { background: var(--electric-violet); color: #fff; }
+[data-theme="dark"] .sidebar-icon-btn { color: #9CA3AF; }
+[data-theme="dark"] .sidebar-icon-btn:hover { color: #C4B5FD; background: rgba(139, 92, 246, .12); }
+[data-theme="dark"] .sidebar-icon-btn .notif-dot { border-color: var(--card-bg); }
+
+/* ---------- collapsed (desktop) ---------- */
+.sidebar.collapsed .sidebar-header-top { justify-content: center; }
+.sidebar.collapsed .sidebar-top-actions { justify-content: center; flex-direction: column; gap: 4px; }
+.sidebar.collapsed .nav-submenu,
+.sidebar.collapsed .nav-chevron { display: none !important; }
+.sidebar.collapsed { width: 76px; padding: 18px 10px 14px; }
+.sidebar.collapsed .nav-item span { display: none; }
+.sidebar.collapsed .sidebar-header { justify-content: center; margin-bottom: 14px; }
+.sidebar.collapsed .logo-container { display: none; }
+.sidebar.collapsed .toggle-sidebar-btn { background: transparent; border-color: transparent; box-shadow: none; min-width: 40px; height: 40px; border-radius: 12px; }
+.sidebar.collapsed .toggle-sidebar-btn .toggle-logo-img { display: block; }
+.sidebar.collapsed .toggle-sidebar-btn .toggle-panel-icon { display: none; position: absolute; }
+.sidebar.collapsed .toggle-sidebar-btn:hover {
+  background: var(--lavender-mist);
+  border-color: rgba(123, 79, 224, .18);
+  color: var(--primary-violet);
+  box-shadow: 0 1px 3px rgba(91, 58, 166, .06);
+  transform: none;
+}
+.sidebar.collapsed .toggle-sidebar-btn:hover .toggle-logo-img { display: none; }
+.sidebar.collapsed .toggle-sidebar-btn:hover .toggle-panel-icon { display: block; }
+[data-theme="dark"] .sidebar.collapsed .toggle-sidebar-btn:hover { background: rgba(139, 92, 246, .15); border-color: rgba(167, 139, 250, .25); color: #C4B5FD; }
+.sidebar.collapsed .nav-item a { justify-content: center; padding: 12px 0; border-radius: 12px; min-height: 42px; }
+.sidebar.collapsed .nav-item.active a,
+.sidebar.collapsed .nav-item-parent.has-active-child > a { background: var(--lavender-mist); color: var(--primary-violet); }
+.sidebar.collapsed .sidebar-user-info { display: none; }
+.sidebar.collapsed .sidebar-user { justify-content: center; padding: 8px 0; }
+.sidebar.collapsed .nav-item { margin: 2px 0; }
+
+/* ---------- submenus ---------- */
+.nav-item-parent.open > a .nav-chevron { transform: rotate(180deg); }
+.nav-item-parent.open .nav-submenu { display: flex; }
+.nav-subitem.active a { background: var(--lavender-mist); color: var(--primary-violet); font-weight: 800; }
+.nav-item-parent.has-active-child > a { background: transparent; color: var(--primary-violet); font-weight: 800; }
+.nav-item-parent.has-active-child > a:hover { background: var(--hover-nav-bg); }
+
+/* ---------- logout (new in React: moved here from the old app footer) ----------
+   Styled with the existing nav-item look so it reads as part of the sidebar. */
+.sidebar-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.sidebar-logout i { width: 18px; min-width: 18px; text-align: center; font-size: 15px; }
+.sidebar-logout:hover { background: var(--hover-nav-bg); color: var(--electric-violet); }
+.sidebar-logout:disabled { opacity: .6; cursor: wait; }
+.sidebar.collapsed .sidebar-logout { justify-content: center; padding: 12px 0; min-height: 42px; }
+.sidebar.collapsed .sidebar-logout span { display: none; }
+
+/* ---------- mobile drawer (new: legacy had no mobile shell) ----------
+   Below 900px the same sidebar slides in from the right over an overlay. */
+.sidebar-overlay { display: none; }
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    height: auto;
+    z-index: 1001;
+    max-width: calc(100vw - 32px);
+    /* Solid, so the dimmed page doesn't show through the open drawer. */
+    background: var(--card-solid);
+    transform: translateX(calc(100% + 24px));
+    visibility: hidden;
+    transition: transform .3s ease, visibility .3s, background .3s, border-color .3s;
+  }
+  .sidebar.drawer-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(17, 12, 28, .35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar, .sidebar-overlay { transition: none; }
+}

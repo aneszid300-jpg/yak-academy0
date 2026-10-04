@@ -1,0 +1,33 @@
+/* ============================================================
+   الإعدادات — NEW (legacy had no settings page).
+   Built on the dashboard's .section-card / .btn-outline /
+   .courses-filter-btn and the shared light/dark tokens.
+   ============================================================ */
+.settings-page { flex: 1 0 auto; width: 100%; animation: yak-page-in .25s ease; }
+
+.settings-user { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.settings-user-name { font-size: 15px; font-weight: 800; color: var(--text-main); overflow-wrap: anywhere; }
+
+.settings-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.settings-field {
+  background: var(--search-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  min-width: 0;
+  transition: background .3s, border-color .3s;
+}
+.settings-field dt { font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+.settings-field dd { margin: 0; font-size: 13.5px; font-weight: 700; color: var(--text-main); overflow-wrap: anywhere; text-align: right; }
+.settings-field dd.missing { color: var(--text-muted); font-weight: 600; }
+
+.settings-note { font-size: 12.5px; color: var(--text-muted); margin: -6px 0 14px; }
+
+/* same states as the sidebar's .sidebar-logout */
+.settings-logout { display: inline-flex; align-items: center; gap: 8px; }
+.settings-logout:hover { color: var(--electric-violet); }
+.settings-logout:disabled { opacity: .6; cursor: wait; }
+
+@media (max-width: 900px) {
+  .settings-fields { grid-template-columns: 1fr; }
+}

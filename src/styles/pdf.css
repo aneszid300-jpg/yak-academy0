@@ -1,0 +1,21 @@
+/* =========================================================
+   PDF viewer (معاينة PDF) — rules copied from legacy/dashboard.html
+   (#page-pdf). Top bar: viewer.css. Buttons: .btn-violet / .btn-outline
+   (dashboard-home.css).
+   ========================================================= */
+
+.pdf-page {
+  flex: 1 0 auto;
+  width: 100%;
+  animation: yak-page-in .25s ease;
+}
+
+.pdf-viewer-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-subtle); display: flex; flex-direction: column; min-height: calc(100vh - 130px); }
+.pdf-viewer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--card-border); background: rgba(123, 79, 224, 0.06); }
+.pdf-viewer-frame-wrap { flex: 1; min-height: 70vh; background: #1a1230; }
+.pdf-viewer-frame-wrap iframe { width: 100%; height: 75vh; border: 0; background: #fff; }
+.pdf-viewer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* The two toolbar buttons are links; legacy left them with the browser's
+   default link underline (Tailwind's reset removes it). */
+.pdf-viewer-actions a { text-decoration: underline; }

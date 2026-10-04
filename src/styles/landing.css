@@ -1,0 +1,44 @@
+/* =========================================================
+   Landing page — the few visuals that read better as CSS
+   than as Tailwind class strings. Values copied from
+   legacy/index.html.
+   ========================================================= */
+
+/* The landing's `transition: var(--transition)` easing → `ease-yak` */
+@theme {
+  --ease-yak: cubic-bezier(.22, .61, .36, 1);
+}
+
+body.yak-scope-landing {
+  overflow-x: hidden;
+}
+
+/* Fixed grid behind the page, fading out towards the bottom */
+.landing-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -5;
+  background-image:
+    linear-gradient(var(--grid-line-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-color) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, .7) 35%, transparent 100%);
+}
+
+/* Story card: white grid lines over the violet panel */
+.story-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: .15;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .5) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Hero floating science cards */
+@keyframes yak-floating {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
