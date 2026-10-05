@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { useAuth } from "../../hooks/useAuth.js";
 import { ALL_COURSES } from "../../data/courses.js";
-import { getContentAccessMap, getContentPrices, onPaymentChange } from "../../services/paymentService.js";
+import { REVIEW_STATUSES, getContentAccessMap, getContentPrices, onPaymentChange } from "../../services/paymentService.js";
 
 // Which units the signed-in student can open, and their prices — fetched once
 // for all units through paymentService and shared by every component
@@ -68,4 +68,22 @@ export function useCourseAccess(courseId) {
     error: all.error,
     reload: all.reload,
   };
+}
+
+/**
+ * Lock of content that comes with a unit (باك AI decks, تمارين الدورات), for
+ * the lists that show it. `all` is useCoursesAccess(). Returns null while
+ * access is unknown or the unit is owned, otherwise:
+ *   "unavailable" — no unit yet (courseId null)
+ *   "review"      — the unit's purchase is being checked
+ *   "locked"      — the unit is not bought
+ * The routes' own gates (AccessGates.jsx) decide for direct links.
+ */
+export function unitLock(courseId, all) {
+  if (all.status !== "ready") return null;
+  if (!courseId) return "unavailable";
+  const unit = all.access[courseId];
+  if (unit?.hasAccess) return null;
+  if (REVIEW_STATUSES.includes(unit?.status)) return "review";
+  return "locked";
 }

@@ -252,7 +252,7 @@ button.subject-chip.btn-violet {
 /* Course tile, built to the reference card (1000 × 727 units). Every size is
    in cqw (1cqw = 10 units of the card's width), so the reference proportions
    hold at any card width. Physical left/right as in the reference: photo on
-   the left, subject tile on the right, text on the left. Coloured by the
+   the left, subject tile on the right. Coloured by the
    course's legacy .diff-* class. */
 .unit-card {
   --accent: #6542D6;
@@ -343,11 +343,10 @@ button.subject-chip.btn-violet {
 }
 .unit-card-badge.is-review { background: color-mix(in srgb, var(--accent) 14%, #fff); }
 
-/* Text block: title and unit just below the photo (y 445), the progress row
-   pinned to the reference's bottom line; left-aligned as in the reference. */
+/* Text block: the course title just below the photo (y 445, on the right),
+   the bottom row pinned to the reference's bottom line. */
 .unit-card-body { position: absolute; z-index: 2; left: 6cqw; right: 6.7cqw; top: 44.5cqw; bottom: 4.4cqw; display: flex; flex-direction: column; text-align: end; }
-.unit-card-title { margin: 0; font-size: max(13px, 4.45cqw); font-weight: 700; line-height: 1.4; color: var(--uc-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.unit-card-unit { display: flex; align-items: center; justify-content: flex-end; gap: 1.6cqw; margin: -.3cqw 0 0; font-size: max(10px, 2.9cqw); font-weight: 600; line-height: 1.5; color: var(--uc-muted); }
+.unit-card-title { margin: 3.4cqw 0 0; text-align: right; font-size: max(13px, 4.45cqw); font-weight: 700; line-height: 1.4; color: var(--uc-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .unit-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 3cqw; margin-top: auto; height: 4.6cqw; }
 .unit-card-lessons { display: inline-flex; align-items: center; gap: 5.6cqw; flex-shrink: 0; font-size: max(10px, 3.2cqw); font-weight: 600; color: var(--uc-text); white-space: nowrap; }
 .unit-card-icon { width: max(13px, 4.6cqw); height: max(13px, 4.6cqw); flex-shrink: 0; color: color-mix(in srgb, var(--accent) 72%, #000); }
@@ -390,6 +389,238 @@ button.subject-chip.btn-violet {
 @media (max-width: 700px) { .unit-cards-grid { grid-template-columns: minmax(0, 1fr); } }
 .unit-card { cursor: pointer; }
 .ex-sticker, .ex-sticker-btn { cursor: pointer; }
+
+/* ---------- course details + confirmation (CourseDetailsModal) ----------
+   Centered sheet (payment pages' tokens, radius and shadow), with the
+   dashboard modals' overlay and blur. */
+.course-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(35, 24, 55, .42);
+  backdrop-filter: blur(8px);
+  animation: course-modal-fade .18s ease;
+  --accent: #6542D6; /* the course's .diff-* class on the sheet overrides it */
+  /* payment form tones (payment.css reads them from .payment-page) */
+  --pay-bad: #c2413b;
+  --pay-bad-bg: rgba(214, 69, 69, .09);
+  --pay-soft: rgba(123, 79, 224, .06);
+}
+.course-modal-card {
+  width: min(480px, 100%);
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  display: flex;
+  overflow: hidden;
+  background: var(--card-solid, #fff);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 24px 70px rgba(45, 30, 70, .22);
+  font-family: var(--font-auth);
+  animation: course-modal-rise .22s ease;
+}
+.course-modal-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.course-modal-head { flex-shrink: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 22px 16px; border-bottom: 1px solid var(--card-border); }
+.course-modal-title { margin: 0; font-size: 18px; font-weight: 800; line-height: 1.4; color: var(--text-main); }
+.course-modal-sub { margin: 3px 0 0; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.course-modal-close { flex: 0 0 28px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--card-border); border-radius: 50%; background: var(--btn-outline-bg); color: var(--text-muted); cursor: pointer; transition: color .15s, border-color .15s; }
+.course-modal-close:hover { color: var(--electric-violet); border-color: var(--electric-violet); }
+
+.course-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 18px 22px; }
+.course-modal-body > * { flex-shrink: 0; }
+/* Description, professor name and the شعب label share one text style. */
+.course-modal-text { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.75; color: var(--text-muted); }
+.course-modal-label { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+/* Professor: a tiny round avatar (or person icon) beside the name; not a link. */
+.course-modal-prof { display: inline-flex; align-items: center; gap: 7px; align-self: flex-start; }
+.course-modal-prof-icon { flex-shrink: 0; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--lavender-mist); color: var(--text-muted); }
+.course-modal-desc { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.75; color: var(--text-main); }
+.course-modal-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.course-modal-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border: 1px solid var(--card-border); border-radius: 10px; background: var(--card-solid, #fff); box-shadow: 0 1px 2px rgba(91, 58, 166, .06); font-size: 12.5px; font-weight: 700; color: var(--text-main); white-space: nowrap; }
+.course-modal-chip svg { flex-shrink: 0; color: var(--electric-violet); }
+
+.course-modal-confirm { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border: 1px solid rgba(123, 79, 224, .16); border-radius: 14px; background: var(--lavender-mist); }
+.course-modal-confirm-icon { flex-shrink: 0; margin-top: 1px; color: var(--electric-violet); }
+.course-modal-confirm-title { font-size: 14px; font-weight: 800; line-height: 1.5; color: var(--text-main); }
+.course-modal-confirm-text { margin-top: 2px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+/* Final price: muted label (with icon) on the right, the amount as the
+   strongest element on the left, on a light tint of the course's accent. */
+.course-modal-price { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--card-border)); border-radius: 14px; background: color-mix(in srgb, var(--accent) 5%, var(--card-solid, #fff)); }
+.course-modal-price-label { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--text-muted); }
+.course-modal-price-icon { width: 32px; height: 32px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: color-mix(in srgb, var(--accent) 12%, var(--card-solid, #fff)); color: color-mix(in srgb, var(--accent) 78%, #000); }
+.course-modal-price-value { display: inline-flex; align-items: baseline; gap: 5px; color: var(--text-main); font-variant-numeric: tabular-nums; }
+.course-modal-price-value strong { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -.5px; }
+.course-modal-price-currency { font-size: 14px; font-weight: 700; color: var(--text-muted); }
+
+/* Buttons: «اشحن رصيدك» in the course's accent (same treatment as the card's
+   «انضم للدورة»), «إلغاء» as a quieter outline. */
+.course-modal-actions { flex-shrink: 0; display: flex; gap: 10px; padding: 14px 22px 18px; border-top: 1px solid var(--card-border); }
+.course-modal-btn { display: inline-flex; align-items: center; justify-content: center; height: 46px; padding: 0 22px; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 800; line-height: 1; white-space: nowrap; cursor: pointer; transition: transform .18s, box-shadow .18s, filter .18s, background .18s, border-color .18s, color .18s; }
+.course-modal-btn.is-primary { flex: 1; border: none; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 78%, #000), color-mix(in srgb, var(--accent) 62%, #000)); color: #fff; box-shadow: 0 1px 0 rgba(255, 255, 255, .22) inset, 0 6px 16px color-mix(in srgb, var(--accent) 30%, transparent); }
+.course-modal-btn.is-primary:hover { transform: translateY(-1px); filter: brightness(1.06); box-shadow: 0 1px 0 rgba(255, 255, 255, .22) inset, 0 9px 22px color-mix(in srgb, var(--accent) 38%, transparent); }
+.course-modal-btn.is-secondary { flex: 0 0 auto; min-width: 104px; border: 1px solid var(--card-border); background: var(--btn-outline-bg); color: var(--text-main); }
+.course-modal-btn.is-secondary:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--card-border)); color: color-mix(in srgb, var(--accent) 78%, #000); background: color-mix(in srgb, var(--accent) 5%, var(--btn-outline-bg)); }
+.course-modal-btn:active { transform: scale(.98); }
+.course-modal-btn:focus-visible,
+.course-modal-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.course-modal-btn:focus:not(:focus-visible) { outline: none; }
+/* «شحن المحفظة» view (TopUpMethods): kicker, method rows, bottom note. */
+.course-modal-kicker { margin-bottom: 4px; font-size: 11px; font-weight: 800; letter-spacing: .06em; color: var(--text-muted); }
+.topup-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.topup-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 14px; background: var(--card-solid, #fff); color: var(--text-main); font-family: inherit; text-align: start; cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
+.topup-row:hover { border-color: rgba(123, 79, 224, .4); background: rgba(123, 79, 224, .04); transform: translateY(-1px); }
+.topup-row:focus-visible { outline: 2px solid var(--electric-violet); outline-offset: 2px; }
+.topup-row .pay-tile { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; }
+.topup-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.topup-title { font-size: 13.5px; font-weight: 800; }
+.topup-sub { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
+.topup-arrow { flex-shrink: 0; display: inline-flex; color: var(--text-muted); transition: color .15s, transform .15s; }
+.topup-row:hover .topup-arrow { color: var(--electric-violet); transform: translateX(-2px); }
+.topup-soon { flex-shrink: 0; padding: 3px 9px; border-radius: 999px; background: var(--lavender-mist); color: var(--primary-violet); font-size: 10.5px; font-weight: 800; }
+.course-modal-note { flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 22px; border-top: 1px solid var(--card-border); font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-align: center; }
+.course-modal-note svg { flex-shrink: 0; color: var(--electric-violet); }
+/* Views of the window (details / شحن المحفظة / CCP) slide in when switched. */
+.course-modal-main { animation: course-modal-view .2s ease; }
+@keyframes course-modal-view { from { opacity: 0; transform: translateX(-10px); } }
+.course-modal-card { transition: width .25s ease; }
+.course-modal-card.is-wide { width: min(980px, 100%); }
+.course-modal-head.is-stacked { flex-direction: column; align-items: stretch; gap: 10px; padding-top: 14px; }
+.course-modal-bar { display: flex; align-items: center; gap: 10px; }
+.course-modal-bar .course-modal-kicker { margin: 0; }
+.course-modal-bar-end { margin-inline-start: auto; }
+.course-modal-title-row { display: flex; align-items: center; gap: 12px; }
+.course-modal-body.is-flush { padding: 0; }
+
+/* «حوالة بريدية (CCP)»: guide on the right, form on the left. */
+.ccp-topup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); min-height: 100%; }
+.ccp-topup-guide { padding: 18px 22px; background: rgba(123, 79, 224, .04); border-inline-end: 1px solid var(--card-border); }
+.ccp-topup-guide-title { margin: 0 0 12px; font-size: 16px; font-weight: 800; color: var(--text-main); }
+.ccp-topup-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ccp-topup-steps li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; font-weight: 600; line-height: 1.7; color: var(--text-main); }
+.ccp-topup-num { flex: 0 0 22px; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; border-radius: 50%; background: var(--primary-violet); color: #fff; font-size: 11.5px; font-weight: 800; }
+.ccp-topup-recipient { margin: 14px 0; display: flex; flex-direction: column; gap: 8px; }
+.ccp-topup-recipient-row { padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 12px; background: var(--card-solid, #fff); }
+.ccp-topup-recipient-row dt { font-size: 11.5px; font-weight: 700; color: var(--text-muted); }
+.ccp-topup-recipient-row dd { margin: 2px 0 0; font-size: 13.5px; font-weight: 800; color: var(--text-main); }
+.ccp-topup-form { display: flex; flex-direction: column; gap: 14px; padding: 18px 22px; }
+.ccp-topup-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 12px; }
+.yak-select { position: relative; }
+.yak-select-trigger { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: start; cursor: pointer; font-family: inherit; }
+.yak-select-trigger.is-placeholder .yak-select-value { color: #8f8a99; }
+.yak-select-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.yak-select-chevron { flex-shrink: 0; color: var(--text-muted); transition: transform .2s, color .2s; }
+.yak-select.is-open .yak-select-trigger { border-color: var(--electric-violet); box-shadow: 0 0 0 3px rgba(123, 79, 224, .12); }
+.yak-select.is-open .yak-select-chevron { transform: rotate(180deg); color: var(--electric-violet); }
+.yak-select-pop { position: absolute; z-index: 20; top: calc(100% + 6px); inset-inline: 0; min-width: 200px; overflow: hidden; border: 1px solid var(--card-border); border-radius: 14px; background: var(--card-solid, #fff); box-shadow: 0 14px 34px rgba(45, 30, 70, .16); animation: yak-select-in .14s ease; }
+@keyframes yak-select-in { from { opacity: 0; transform: translateY(-4px); } }
+.yak-select-search { display: flex; align-items: center; gap: 8px; margin: 8px; padding: 0 10px; height: 36px; border: 1px solid var(--card-border); border-radius: 10px; background: var(--btn-outline-bg); color: var(--text-muted); }
+.yak-select-search:focus-within { border-color: var(--electric-violet); }
+.yak-select-search input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font: inherit; font-size: 12.5px; color: var(--text-main); }
+.yak-select-list { list-style: none; margin: 0; padding: 4px 6px 6px; max-height: 232px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(123, 79, 224, .35) transparent; }
+.yak-select-list::-webkit-scrollbar { width: 6px; }
+.yak-select-list::-webkit-scrollbar-thumb { background: rgba(123, 79, 224, .35); border-radius: 99px; }
+.yak-select-option { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; }
+.yak-select-option.is-active { background: var(--hover-nav-bg, rgba(123, 79, 224, .07)); color: var(--electric-violet); }
+.yak-select-option.is-selected { background: var(--lavender-mist); color: var(--primary-violet); font-weight: 800; }
+.yak-select-option svg { flex-shrink: 0; color: var(--electric-violet); }
+.yak-select-empty { padding: 12px; text-align: center; font-size: 12.5px; color: var(--text-muted); }
+@media (prefers-reduced-motion: reduce) { .yak-select-pop { animation: none; } }
+.ccp-topup-form .payment-input:disabled { opacity: .6; cursor: not-allowed; }
+.ccp-topup-amount { background: rgba(123, 79, 224, .05); font-weight: 800; font-variant-numeric: tabular-nums; }
+/* إثبات الدفع: send the receipt on WhatsApp or Telegram (no upload). */
+.ccp-topup-label { font-size: 12px; font-weight: 900; color: var(--text-main); }
+.ccp-proof { display: flex; flex-direction: column; gap: 10px; }
+.ccp-proof-btn { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--card-border); border-radius: 14px; background: var(--card-solid, #fff); color: var(--text-main); text-decoration: none; transition: border-color .15s, background .15s, transform .15s, box-shadow .15s; }
+.ccp-proof-btn.is-whatsapp { --channel: #1FA855; }
+.ccp-proof-btn.is-telegram { --channel: #229ED9; }
+a.ccp-proof-btn:hover { border-color: var(--channel); background: color-mix(in srgb, var(--channel) 6%, var(--card-solid, #fff)); transform: translateY(-1px); box-shadow: 0 6px 16px color-mix(in srgb, var(--channel) 16%, transparent); }
+a.ccp-proof-btn:focus-visible { outline: 2px solid var(--channel); outline-offset: 2px; }
+.ccp-proof-btn.is-soon { opacity: .7; cursor: default; }
+.ccp-proof-icon { flex: 0 0 40px; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--channel); color: #fff; font-size: 21px; }
+.ccp-proof-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ccp-proof-title { font-size: 13.5px; font-weight: 800; }
+.ccp-proof-sub { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
+.ccp-proof-go { flex-shrink: 0; color: var(--channel); font-size: 14px; transition: transform .15s; }
+a.ccp-proof-btn:hover .ccp-proof-go { transform: translateX(-3px); }
+.ccp-topup-actions { display: flex; gap: 10px; }
+.ccp-topup-actions .course-modal-btn.is-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; filter: none; }
+.ccp-topup-soon { margin: -4px 0 0; font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
+/* «الدفع الإلكتروني»: the amount on the right (Yak logo, divider, price). */
+.slick-topup-amount { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 28px 22px; background: rgba(123, 79, 224, .04); border-inline-end: 1px solid var(--card-border); text-align: center; }
+.slick-topup-logo { height: 40px; width: auto; }
+.slick-topup-divider { width: 70%; margin: 14px 0 10px; border: 0; border-top: 1px solid var(--card-border); }
+.slick-topup-label { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+.slick-topup-value { display: inline-flex; align-items: baseline; gap: 6px; color: var(--text-main); font-variant-numeric: tabular-nums; }
+.slick-topup-value strong { font-size: 34px; font-weight: 800; line-height: 1.1; letter-spacing: -.5px; }
+.slick-topup-value span { font-size: 15px; font-weight: 700; color: var(--text-muted); }
+.slick-topup-terms { display: flex !important; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px !important; font-weight: 700 !important; color: var(--text-main); }
+.slick-topup-terms input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+.slick-topup-terms a { color: var(--electric-violet); text-decoration: underline; }
+.slick-topup-terms.is-invalid input { outline: 2px solid var(--pay-bad); outline-offset: 1px; }
+.ccp-topup-actions .course-modal-btn { gap: 8px; }
+/* «BaridiMob»: RIP card, app instruction, pending note. */
+.ccp-topup-steps li.is-current .ccp-topup-num { box-shadow: 0 0 0 4px rgba(123, 79, 224, .18); }
+.ccp-topup-steps li:not(.is-current) { color: var(--text-muted); }
+.baridi-pending { margin-top: 16px; padding: 10px 12px; border-radius: 12px; background: rgba(245, 158, 11, .1); color: #a15c07; font-size: 12px; font-weight: 700; line-height: 1.6; }
+.baridi-transfer { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 18px; border: 1.5px solid color-mix(in srgb, var(--accent) 22%, var(--card-border)); border-radius: 16px; background: color-mix(in srgb, var(--accent) 5%, var(--card-solid, #fff)); text-align: center; }
+.baridi-transfer-label { font-size: 12px; font-weight: 800; color: var(--text-muted); }
+.baridi-rip { font-size: 22px; font-weight: 800; letter-spacing: .06em; color: var(--text-main); font-variant-numeric: tabular-nums; word-break: break-all; }
+.baridi-beneficiary { font-size: 12.5px; font-weight: 700; color: var(--text-muted); }
+.baridi-copy { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 18px; border: 1.5px solid color-mix(in srgb, var(--accent) 40%, var(--card-border)); border-radius: 10px; background: var(--card-solid, #fff); color: color-mix(in srgb, var(--accent) 78%, #000); font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; transition: background .15s, border-color .15s; }
+.baridi-copy:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 8%, var(--card-solid, #fff)); }
+.baridi-copy.is-copied { border-color: #16845b; color: #16845b; }
+.baridi-copy:disabled { opacity: .55; cursor: not-allowed; }
+.baridi-divider { width: 100%; margin: 6px 0; border: 0; border-top: 1px dashed var(--card-border); }
+.baridi-amount { width: 100%; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.baridi-amount span { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+.baridi-amount strong { font-size: 24px; font-weight: 800; color: var(--text-main); font-variant-numeric: tabular-nums; }
+.baridi-amount small { font-size: 13px; color: var(--text-muted); }
+.baridi-app { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 14px; background: rgba(22, 132, 91, .08); color: var(--text-main); font-size: 13px; font-weight: 600; line-height: 1.7; }
+.baridi-app i { margin-top: 3px; color: #16845b; font-size: 16px; }
+@media (max-width: 760px) {
+  .ccp-topup { grid-template-columns: minmax(0, 1fr); }
+  .ccp-topup-guide, .slick-topup-amount { border-inline-end: none; border-bottom: 1px solid var(--card-border); }
+  .slick-topup-amount { padding: 18px; }
+}
+@media (max-width: 420px) {
+  .ccp-topup-grid { grid-template-columns: minmax(0, 1fr); }
+  .ccp-topup-guide, .ccp-topup-form { padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .course-modal-main { animation: none; }
+}
+@keyframes course-modal-fade { from { opacity: 0; } }
+@keyframes course-modal-rise { from { opacity: 0; transform: translateY(10px) scale(.98); } }
+@media (max-width: 520px) {
+  .course-modal { padding: 12px; }
+  .course-modal-head, .course-modal-body, .course-modal-actions { padding-inline: 16px; }
+  .course-modal-title { font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .course-modal, .course-modal-card { animation: none; }
+}
+
+/* ---------- professor profile (/dashboard/professors/:id) ---------- */
+.professor-page { flex: 1 0 auto; width: 100%; display: flex; flex-direction: column; gap: 16px; animation: yak-page-in .25s ease; }
+.professor-avatar { border-radius: 50%; object-fit: cover; flex-shrink: 0; display: block; }
+.professor-avatar.is-initial { display: inline-flex; align-items: center; justify-content: center; background: var(--electric-violet); color: #fff; font-weight: 800; }
+.professor-card { display: flex; align-items: center; gap: 18px; }
+.professor-info { min-width: 0; }
+.professor-name { margin: 0; font-size: 22px; font-weight: 900; color: var(--text-main); }
+.professor-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.professor-tag { font-size: 11.5px; font-weight: 800; padding: 3px 10px; border-radius: 99px; background: var(--lavender-mist); color: var(--primary-violet); }
+.professor-tag.is-subject { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); }
+.professor-bio { margin: 10px 0 0; font-size: 13px; line-height: 1.8; color: var(--text-muted); }
+@media (max-width: 560px) {
+  .professor-card { flex-direction: column; text-align: center; }
+  .professor-tags { justify-content: center; }
+}
 
 /* ---------- dark ---------- */
 [data-theme="dark"] .courses-filter-btn.active { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .22); color: #E9D5FF; }
@@ -439,4 +670,8 @@ button.subject-chip.btn-violet {
 [data-theme="dark"] .diff-blue { --accent: #60A5FA; }
 [data-theme="dark"] .unit-card-shape .uc-panel-rim { opacity: .12; }
 [data-theme="dark"] .unit-card-badge { background: rgba(23, 16, 42, .82); color: var(--accent); }
+[data-theme="dark"] .course-modal { --accent: #A78BFA; }
+[data-theme="dark"] .course-modal-btn.is-primary { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 86%, #fff), var(--accent)); color: #17102A; }
+[data-theme="dark"] .course-modal-price-icon,
+[data-theme="dark"] .course-modal-btn.is-secondary:hover { color: var(--accent); }
 [data-theme="dark"] .unit-card-join { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 86%, #fff), var(--accent)); color: #17102A; }

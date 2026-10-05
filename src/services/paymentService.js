@@ -33,6 +33,7 @@ const unavailableAdapter = {
   createSlickPayPayment: async () => unavailable(),
   getPurchaseStatus: async () => unavailable(),
   getPurchaseHistory: async () => unavailable(),
+  getBalance: async () => unavailable(),
   cancelPurchase: async () => unavailable(),
 };
 
@@ -99,6 +100,9 @@ export const getPurchaseStatus = async (purchaseId) => changed(await adapter.get
 
 /** @returns {Promise<Purchase>} status "cancelled" */
 export const cancelPurchase = async (purchaseId) => changed(await adapter.cancelPurchase(purchaseId));
+
+/** The signed-in student's wallet credit («رصيدك في المحفظة»), set by the server. @returns {Promise<Balance>} */
+export const getBalance = () => adapter.getBalance();
 
 /** Every purchase of the signed-in student, newest first. @returns {Promise<Purchase[]>} */
 export const getPurchaseHistory = () => adapter.getPurchaseHistory();

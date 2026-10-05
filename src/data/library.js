@@ -63,5 +63,12 @@ export const getBacStreams = (subjectId) => BAC_STREAMS[subjectId] || FALLBACK_S
 // «مواضيع البكالوريا شعبة رياضيات» → «شعبة رياضيات»
 export const streamShortName = (name) => name.replace("مواضيع البكالوريا ", "");
 
+// The شعب a subject is examined in, as short labels: «رياضيات», «علوم تجريبية»,
+// «الشعب الأدبية», «جميع الشعب». Used for «الأقسام المعنية بهذه الدورة».
+export const getSubjectBranches = (subjectId) =>
+  (BAC_STREAMS[subjectId] || []).map((stream) =>
+    streamShortName(stream.name).replace(/^شعبة /, "").replace(/^لجميع /, "جميع ").replace(/^للشعب /, "الشعب ")
+  );
+
 // A year card opens the PDF viewer: /dashboard/pdf/bac-<subject>-<stream n°>-<year>.
 export const bacPaperId = (subjectId, streamNumber, year) => `bac-${subjectId}-${streamNumber}-${year}`;

@@ -6,6 +6,7 @@
  * @typedef {"pending"|"submitted"|"under_review"|"approved"|"rejected"|"cancelled"} PurchaseStatus
  *
  * @typedef {Object} Price        { amount: number, currency: "DZD" }
+ * @typedef {Object} Balance      { amount: number, currency: "DZD" }   the student's wallet credit
  * @typedef {Object} Access       { hasAccess: boolean, status: PurchaseStatus|"none", purchase: Purchase|null }
  * @typedef {Object} Purchase
  * @property {string} id

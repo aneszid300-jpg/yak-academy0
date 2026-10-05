@@ -12,6 +12,7 @@
 // • The Yak team's review is simulated from the browser console:
 //     yakPaymentMock.review("<purchaseId>", "approved" | "rejected", "reason")
 //     yakPaymentMock.grant("<courseId>")   // pretend the unit was bought
+//     yakPaymentMock.setBalance(1500)       // the student's wallet credit (default 0)
 //     yakPaymentMock.reset()
 // • Tests can seed the session store directly (key below) — see seedMockPayments.
 
@@ -186,6 +187,12 @@ export const mockAdapter = {
     return toPublic(purchase);
   },
 
+  async getBalance() {
+    await simulate("getBalance");
+    await currentUserId();
+    return { amount: load().balance ?? 0, currency: "DZD" };
+  },
+
   async getPurchaseHistory() {
     await simulate("getPurchaseHistory");
     const userId = await currentUserId();
@@ -254,6 +261,13 @@ export function installMockDevTools() {
       const price = priceOf("course", courseId);
       if (!price) return false;
       data.purchases.push({ id: newId(), userId, contentType: "course", contentId: courseId, ...price, paymentMethod: "ccp", status: S.APPROVED, createdAt: now(), updatedAt: now() });
+      save(data);
+      notify();
+      return true;
+    },
+    setBalance(amount) {
+      const data = load();
+      data.balance = Math.max(0, Number(amount) || 0);
       save(data);
       notify();
       return true;

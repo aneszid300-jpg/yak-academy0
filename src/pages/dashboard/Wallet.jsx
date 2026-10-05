@@ -1,169 +1,172 @@
-import { Link } from "react-router-dom";
-import { getCourse } from "../../data/courses.js";
-import { PAYMENT_METHODS, formatPrice } from "../../config/paymentConfig.js";
-import { REVIEW_STATUSES } from "../../services/paymentService.js";
+import { useCallback, useRef, useState } from "react";
+import { useBalance } from "../../features/payments/balance.js";
+import { toActivity } from "../../features/payments/activity.js";
 import { useWallet } from "../../features/payments/wallet.js";
-import PaymentSheet from "../../components/dashboard/payment/PaymentSheet.jsx";
-import { MockNotice, StatusCard } from "../../components/dashboard/payment/PaymentStatus.jsx";
-import { ClockIcon, CoinsIcon, LayersIcon, METHOD_ICONS, WalletIcon } from "../../components/dashboard/payment/icons.jsx";
-import { METHOD_LABELS, STATUS_CHIPS, formatPayDate, paymentErrorMessage } from "../../components/dashboard/payment/messages.js";
+import { MockNotice } from "../../components/dashboard/payment/PaymentStatus.jsx";
+import TopUpModal from "../../components/dashboard/payment/TopUpModal.jsx";
+import WalletActivity from "../../components/dashboard/payment/WalletActivity.jsx";
+import { METHOD_ICONS, WalletIcon } from "../../components/dashboard/payment/icons.jsx";
+import { paymentErrorMessage } from "../../components/dashboard/payment/messages.js";
 
-// محفظتي — /dashboard/wallet: the student's purchase centre. Everything here
-// comes from paymentService.getWallet() (the server's purchase history); a
-// unit is only «مفعّلة» when the server says its purchase is approved.
+// محفظتي — /dashboard/wallet. Reads top to bottom as:
+//   balance → top up (method selector + how it works) → «سجل المحفظة».
+// Data: paymentService.getBalance() (useBalance) and getWallet() (useWallet →
+// features/payments/activity.js → WalletActivity).
+// A method opens the same method screen as the course details window
+// (TopUpModal). Nothing here marks a payment done or changes the balance.
 
-const methodTone = Object.fromEntries(PAYMENT_METHODS.map((m) => [m.id, m.tone]));
+const METHODS = [
+  { id: "ccp", name: "CCP", subtitle: "حوالة بريدية عبر CCP", cta: "شحن عبر CCP" },
+  { id: "baridimob", name: "BaridiMob", subtitle: "تحويل مباشر عبر BaridiMob", cta: "شحن عبر BaridiMob" },
+  { id: "slickpay", name: "الدفع الإلكتروني", subtitle: "CIB أو الذهبية عبر Slick-Pay", cta: "الدفع الإلكتروني", featured: true },
+];
 
-function Chip({ status }) {
-  const chip = STATUS_CHIPS[status] || STATUS_CHIPS.pending;
-  return <span className={`payment-chip tone-${chip.tone}`}>{chip.label}</span>;
-}
+const STEPS = [
+  { title: "اختر طريقة الدفع", text: "CCP أو BaridiMob أو الدفع الإلكتروني." },
+  { title: "أتمم عملية الدفع", text: "حوّل أو ادفع حسب الطريقة المختارة." },
+  { title: "يتم تأكيد العملية", text: "نتحقق من الدفع ثم يُضاف الرصيد." },
+];
 
-// What a unit card offers, by status.
-function unitAction(status, course) {
-  const pay = `/dashboard/payment/course/${course.id}`;
-  if (status === "approved") return { to: `/dashboard/study/${course.id}`, label: "دخول الوحدة", primary: true };
-  if (REVIEW_STATUSES.includes(status)) return { to: pay, label: "عرض الطلب" };
-  if (status === "rejected") return { to: pay, label: "إعادة المحاولة", primary: true };
-  return { to: pay, label: "متابعة الدفع", primary: true }; // pending (unfinished Slick-Pay)
-}
+const Arrow = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M19 12H5M12 19l-7-7 7-7" />
+  </svg>
+);
 
-function Stat({ icon, label, value, tone }) {
+function BalanceCard({ balance, onTopUp }) {
+  const { status, balance: value } = balance;
   return (
-    <div className="wallet-stat">
-      <span className={`pay-tile tone-${tone}`}>{icon}</span>
-      <div className="min-w-0">
-        <div className="wallet-stat-label">{label}</div>
-        <div className="wallet-stat-value">{value}</div>
+    <section className="wl-balance" aria-labelledby="wlBalanceLabel">
+      <div className="wl-balance-main">
+        <div className="wl-balance-label" id="wlBalanceLabel">
+          <WalletIcon width={16} height={16} />
+          رصيدك الحالي
+        </div>
+        {status === "loading" ? (
+          <div className="payment-skeleton wl-balance-skeleton" aria-label="جاري التحميل" />
+        ) : value ? (
+          <div className="wl-balance-value">
+            <span>{value.amount.toLocaleString("en-US")}</span>
+            <small>دج</small>
+          </div>
+        ) : (
+          <div className="wl-balance-value is-unknown">—</div>
+        )}
+        <p className="wl-balance-hint">
+          {value || status === "loading" ? "يمكنك استخدام رصيدك للانضمام إلى الدورات." : "سيظهر رصيدك هنا بعد ربط المحفظة."}
+        </p>
       </div>
-    </div>
+      <button type="button" className="wl-balance-btn" onClick={onTopUp}>
+        شحن الرصيد
+        <Arrow />
+      </button>
+    </section>
   );
 }
 
-export default function Wallet() {
+function Activity() {
   const { status, wallet, error, reload } = useWallet();
-  const shop = <Link to="/dashboard/courses" className="btn-violet payment-btn">استكشف الدورات</Link>;
-
-  let body;
-  if (status === "loading") {
-    body = (
-      <div aria-busy="true" aria-label="جاري التحميل" className="pay-skeleton-stack">
-        <div className="wallet-stats">{[0, 1, 2].map((i) => <div key={i} className="payment-skeleton" style={{ height: 72 }} />)}</div>
-        <div className="payment-skeleton" style={{ height: 160 }} />
-      </div>
-    );
-  } else if (status === "error") {
-    body = (
-      <StatusCard
-        bare
-        tone="bad"
-        icon="alert"
-        title="تعذر تحميل محفظتك"
-        text={paymentErrorMessage(error)}
-        actions={<button type="button" className="btn-violet payment-btn" onClick={reload}>إعادة المحاولة</button>}
-        testId="wallet-error"
-      />
-    );
-  } else if (wallet.history.length === 0) {
-    body = (
-      <div className="wallet-empty" data-state="wallet-empty">
-        <span className="wallet-empty-icon"><WalletIcon width={30} height={30} /></span>
-        <div className="wallet-empty-title">محفظتك فارغة حالياً</div>
-        <p className="wallet-empty-text">ابدأ رحلتك واختر أول وحدة تريد دراستها. ستجد هنا وحداتك وطلبات الدفع وسجل مدفوعاتك.</p>
-        {shop}
-      </div>
-    );
-  } else {
-    const units = wallet.units.map((u) => ({ ...u, course: getCourse(u.contentId) })).filter((u) => u.course);
-    body = (
-      <div className="wallet-body" data-state="wallet">
-        <div className="wallet-stats">
-          <Stat icon={<LayersIcon />} label="الوحدات المملوكة" value={wallet.ownedCount} tone="green" />
-          <Stat icon={<ClockIcon width={20} height={20} />} label="طلبات قيد المراجعة" value={wallet.reviewCount} tone="amber" />
-          <Stat icon={<CoinsIcon />} label="إجمالي المدفوعات" value={formatPrice(wallet.totalPaid)} tone="violet" />
-        </div>
-
-        {units.length > 0 && (
-          <section aria-labelledby="walletUnits">
-            <div className="wallet-section-head">
-              <h2 id="walletUnits" className="wallet-section-title">وحداتي</h2>
-              <span className="wallet-section-meta">كل وحدة تشمل الدروس المسجلة والحصص المباشرة وبطاقات المراجعة</span>
-            </div>
-            <div className="wallet-units">
-              {units.map(({ contentId, status: unitStatus, purchase, course }) => {
-                const action = unitAction(unitStatus, course);
-                return (
-                  <article key={contentId} className="wallet-unit" data-unit={contentId} data-status={unitStatus}>
-                    <img className="wallet-unit-img" src={course.image} alt="" />
-                    <div className="wallet-unit-info">
-                      <div className="pay-product-kicker">{course.subject}</div>
-                      <div className="wallet-unit-title">{course.title}</div>
-                      <div className="pay-product-meta">
-                        {[course.unit, course.teacher && `الأستاذ: ${course.teacher}`].filter(Boolean).join(" · ")}
-                      </div>
-                      <div className="wallet-unit-facts">
-                        <span>{formatPrice(purchase.amount)}</span>
-                        <span>{`${unitStatus === "approved" ? "تاريخ الشراء" : "تاريخ الطلب"}: ${formatPayDate(purchase.updatedAt)}`}</span>
-                      </div>
-                    </div>
-                    <div className="wallet-unit-side">
-                      <Chip status={unitStatus} />
-                      <Link to={action.to} state={{ from: "/dashboard/wallet" }} className={(action.primary ? "btn-violet" : "btn-outline") + " payment-btn"}>
-                        {action.label}
-                      </Link>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        <section aria-labelledby="walletHistory">
-          <div className="wallet-section-head">
-            <h2 id="walletHistory" className="wallet-section-title">سجل المدفوعات</h2>
-            <span className="wallet-section-meta">{`${wallet.history.length} عملية`}</span>
-          </div>
-          <ul className="wallet-history">
-            {wallet.history.map((p) => {
-              const Icon = METHOD_ICONS[p.paymentMethod];
-              const course = getCourse(p.contentId);
-              return (
-                <li key={p.id} className="wallet-row" data-purchase={p.id}>
-                  <span className={`pay-tile tone-${methodTone[p.paymentMethod] || "violet"}`}><Icon /></span>
-                  <div className="wallet-row-main">
-                    <div className="wallet-row-title">{course ? course.title : p.contentId}</div>
-                    <div className="wallet-row-sub">{`${METHOD_LABELS[p.paymentMethod]} · ${formatPayDate(p.updatedAt)}`}</div>
-                  </div>
-                  <div className="wallet-row-end">
-                    <span className="wallet-row-amount">{formatPrice(p.amount)}</span>
-                    <Chip status={p.status} />
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+  if (status === "loading") return <div className="payment-skeleton" style={{ height: 150, borderRadius: 16 }} aria-label="جاري التحميل" />;
+  if (status === "error") {
+    return (
+      <div className="wa-empty">
+        <div className="wa-empty-title">تعذر تحميل سجل محفظتك</div>
+        <p className="wa-empty-text">{paymentErrorMessage(error)}</p>
+        <button type="button" className="btn-outline payment-btn" onClick={reload}>إعادة المحاولة</button>
       </div>
     );
   }
+  return <WalletActivity items={toActivity(wallet)} />;
+}
+
+export default function Wallet() {
+  const balance = useBalance();
+  const [method, setMethod] = useState(null);
+  const close = useCallback(() => setMethod(null), []);
+  const methodsRef = useRef(null);
+
+  // «شحن الرصيد» brings the method selector into view and focuses its first card.
+  function toMethods() {
+    methodsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => methodsRef.current?.querySelector("button")?.focus({ preventScroll: true }), 350);
+  }
+
+  const active = balance.status !== "error";
 
   return (
-    <section className="payment-page wallet-page">
-      <div className="pay-page-wrap is-wide">
+    <section className="payment-page wallet-page" data-state="wallet-page">
+      <div className="wl">
         <MockNotice />
-        <PaymentSheet
-          kicker="YAK · محفظتي"
-          title="محفظتي"
-          subtitle="وحداتك وطلبات الدفع وسجل مدفوعاتك في مكان واحد."
-          icon={<WalletIcon />}
-          wide
-          aside={status === "ready" && wallet.history.length > 0 ? <Link to="/dashboard/courses" className="btn-outline payment-btn wallet-shop">شراء وحدة جديدة</Link> : null}
-          testId="wallet-page"
-        >
-          {body}
-        </PaymentSheet>
+
+        <header className="wl-head">
+          <div className="min-w-0">
+            <h1 className="wl-title">محفظتي</h1>
+            <p className="wl-sub">إدارة رصيدك وشحن محفظتك بسهولة</p>
+          </div>
+          <span className={"wl-status" + (active ? "" : " is-off")}>
+            <span className="wl-status-dot" aria-hidden="true"></span>
+            {active ? "المحفظة نشطة" : "المحفظة غير متصلة بعد"}
+          </span>
+        </header>
+
+        <BalanceCard balance={balance} onTopUp={toMethods} />
+
+        <section className="wl-section" aria-labelledby="wlMethods" ref={methodsRef}>
+          <div className="wl-section-head">
+            <h2 id="wlMethods" className="wl-section-title">اختر طريقة الشحن</h2>
+            <p className="wl-section-sub">اختر طريقة لإضافة رصيد إلى محفظتك.</p>
+          </div>
+          <div className="wl-methods">
+            {METHODS.map((m) => {
+              const Icon = METHOD_ICONS[m.id];
+              return (
+                <button key={m.id} type="button" className={"wl-method" + (m.featured ? " is-featured" : "")} data-method={m.id} aria-label={`${m.cta} — ${m.subtitle}`} onClick={() => setMethod(m.id)}>
+                  <span className="wl-method-icon"><Icon /></span>
+                  <span className="wl-method-text">
+                    <span className="wl-method-name">{m.name}</span>
+                    <span className="wl-method-sub">{m.subtitle}</span>
+                  </span>
+                  <span className="wl-method-go" aria-hidden="true"><Arrow /></span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="wl-card wl-how" aria-labelledby="wlSteps">
+          <h2 id="wlSteps" className="wl-card-title">كيف يتم شحن رصيدك؟</h2>
+          <ol className="wl-steps">
+            {STEPS.map((step, i) => (
+              <li key={step.title} className="wl-step">
+                <span className="wl-step-num" aria-hidden="true">{i + 1}</span>
+                <span className="wl-step-body">
+                  <span className="wl-step-title">{step.title}</span>
+                  <span className="wl-step-text">{step.text}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="wl-how-note">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" />
+            </svg>
+            <span>
+              <b>يُضاف الرصيد بعد التحقق من عملية الدفع.</b> لا تُحتسب العملية مكتملة قبل تأكيدها.
+            </span>
+          </p>
+        </section>
+
+        <section className="wl-section" aria-labelledby="wlHistory">
+          <div className="wl-section-head">
+            <h2 id="wlHistory" className="wl-section-title">سجل المحفظة</h2>
+            <p className="wl-section-sub">تابع طلبات الشحن وحركة رصيدك.</p>
+          </div>
+          <Activity />
+        </section>
       </div>
+
+      {method && <TopUpModal method={method} onClose={close} />}
     </section>
   );
 }

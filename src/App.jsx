@@ -21,7 +21,8 @@ import Payment from "./pages/dashboard/Payment.jsx";
 import PaymentReturn from "./pages/dashboard/PaymentReturn.jsx";
 import MockGateway from "./pages/dashboard/MockGateway.jsx";
 import Wallet from "./pages/dashboard/Wallet.jsx";
-import { RequireCourseAccess, RequireDeckAccess } from "./components/dashboard/payment/AccessGates.jsx";
+import Professor from "./pages/dashboard/Professor.jsx";
+import { RequireCourseAccess, RequireDeckAccess, RequireExerciseAccess } from "./components/dashboard/payment/AccessGates.jsx";
 import { isMockPayments } from "./services/paymentService.js";
 
 export default function App() {
@@ -48,7 +49,7 @@ export default function App() {
           {/* Flashcards come with their unit: the unit's access decides. */}
           <Route path="flash/:deckId" element={<RequireDeckAccess><Flash /></RequireDeckAccess>} />
           <Route path="pdf" element={<PdfViewer />} />
-          <Route path="pdf/:id" element={<PdfViewer />} />
+          <Route path="pdf/:id" element={<RequireExerciseAccess><PdfViewer /></RequireExerciseAccess>} />
           {/* The study view always belongs to a course, and units are paid. */}
           <Route path="study" element={<Navigate to="/dashboard/courses" replace />} />
           <Route path="study/:courseId" element={<RequireCourseAccess><Study /></RequireCourseAccess>} />
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="payment/return/:purchaseId" element={<PaymentReturn />} />
           {isMockPayments && <Route path="payment/mock-gateway/:purchaseId" element={<MockGateway />} />}
           <Route path="wallet" element={<Wallet />} />
+          <Route path="professors/:professorId" element={<Professor />} />
         </Route>
       </Route>
 

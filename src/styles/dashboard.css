@@ -14,7 +14,10 @@
   padding: 18px 12px 14px;
   display: flex;
   flex-direction: column;
+  /* Viewport-tall and pinned while the page scrolls (16px = the shell's gutter).
+     dvh follows mobile browser bars; vh is the fallback. */
   height: calc(100vh - 32px);
+  height: calc(100dvh - 32px);
   position: sticky;
   top: 16px;
   box-shadow: var(--shadow-subtle);
@@ -22,6 +25,7 @@
 }
 
 .sidebar-header {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -63,7 +67,21 @@
 }
 .toggle-sidebar-btn .toggle-logo-img { display: none; width: 32px; height: 32px; object-fit: cover; object-position: 8% center; border-radius: 8px; }
 
-.nav-menu { list-style: none; display: flex; flex-direction: column; gap: 4px; position: relative; }
+/* The menu takes the space between header and user card and scrolls on its
+   own when open submenus don't fit, so the user card never leaves the sidebar. */
+.nav-menu {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lavender-mist) transparent;
+}
 .nav-item { position: relative; }
 .nav-item a {
   display: flex;
@@ -83,7 +101,7 @@
 .nav-item a:hover { background: var(--hover-nav-bg); color: var(--electric-violet); }
 .nav-item-parent > a { position: relative; }
 
-.sidebar-footer { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--card-border); }
+.sidebar-footer { flex-shrink: 0; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--card-border); }
 .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 12px; }
 .sidebar-user-name { font-size: 13px; font-weight: 800; color: var(--text-main); }
 .sidebar-user-role { font-size: 11px; color: var(--text-muted); }

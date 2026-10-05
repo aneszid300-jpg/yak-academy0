@@ -34,16 +34,26 @@ export const SUBJECT_CHIPS = [
   { key: "literature", label: "الأدب العربي" },
 ];
 
+// Shared description of the units that have no description of their own yet.
+const COURSE_DESCRIPTION = "تهدف هذه الدورة إلى تمكين التلاميذ من فهم أعمق للقوانين والمفاهيم الأساسية، مع التركيز على ربط الدروس بالتطبيقات";
+
 // `accent` is the legacy .diff-* class that colours the card.
+// Shown in the course details window (CourseDetailsModal); empty values are
+// simply not shown, so they can be filled in as the content is ready:
+//   description — what the course covers (the three set below come from the
+//                 legacy Home «أحدث الدورات» cards)
+//   branches    — the شعب it is for (e.g. ["رياضيات", "علوم تجريبية"]); when
+//                 empty, the شعب of its subject in the Library are shown
+//   professorId — id of its teacher in data/professors.js
 export const COURSE_SECTIONS = [
   {
     key: "math",
     title: "الرياضيات",
     dot: null, // default dot colour (--electric-violet)
     courses: [
-      { id: "math-equations", title: "المعادلات والمتراجحات", unit: "الوحدة 2", credit: "2500", image: mathCover, accent: "diff-easy" },
-      { id: "math-limits", title: "النهايات والاتصال", unit: "الوحدة 3", credit: "2500", image: mathCover, accent: "diff-medium" },
-      { id: "math-definite-integral", title: "التكامل المحدد", unit: "الوحدة 4", credit: "2500", image: mathCover, accent: "diff-advanced" },
+      { id: "math-equations", title: "المعادلات والمتراجحات", unit: "الوحدة 2", credit: "2500", image: mathCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
+      { id: "math-limits", title: "النهايات والاتصال", unit: "الوحدة 3", credit: "2500", image: mathCover, accent: "diff-medium", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
+      { id: "math-definite-integral", title: "التكامل المحدد", unit: "الوحدة 4", credit: "2500", image: mathCover, accent: "diff-advanced", description: "شرح مفصل للتكامل بالتجزئة والتعويض مع تمارين محلولة.", branches: [], professorId: "zid-anes" },
     ],
   },
   {
@@ -51,9 +61,9 @@ export const COURSE_SECTIONS = [
     title: "الفيزياء",
     dot: "#F59E0B",
     courses: [
-      { id: "physics-mechanics", title: "الميكانيك الكلاسيكي", unit: "الوحدة 2", credit: "2500", image: mechanicsCover, accent: "diff-orange" },
-      { id: "physics-electrostatics", title: "الكهرباء الساكنة", unit: "الوحدة 1", credit: "2500", image: physicsCover, accent: "diff-easy" },
-      { id: "physics-electric-current", title: "الكهرباء التيارية", unit: "الوحدة 3", credit: "2500", image: physicsCover, accent: "diff-violet" },
+      { id: "physics-mechanics", title: "الميكانيك الكلاسيكي", unit: "الوحدة 2", credit: "2500", image: mechanicsCover, accent: "diff-orange", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
+      { id: "physics-electrostatics", title: "الكهرباء الساكنة", unit: "الوحدة 1", credit: "2500", image: physicsCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
+      { id: "physics-electric-current", title: "الكهرباء التيارية", unit: "الوحدة 3", credit: "2500", image: physicsCover, accent: "diff-violet", description: "قوانين كيرشوف والتيار الكهربائي مع تجارب عملية مبسطة.", branches: [], professorId: "zid-anes" },
     ],
   },
   {
@@ -61,9 +71,9 @@ export const COURSE_SECTIONS = [
     title: "علوم الطبيعة والحياة",
     dot: "#10B981",
     courses: [
-      { id: "science-plant-nutrition", title: "التغذية عند النبات", unit: "الوحدة 1", credit: "2500", image: scienceCover, accent: "diff-easy" },
-      { id: "science-genetics", title: "الوراثة والجينات", unit: "الوحدة 2", credit: "2500", image: scienceCover, accent: "diff-medium" },
-      { id: "science-organ-functions", title: "وظائف الأعضاء الحيوية", unit: "الوحدة 3", credit: "2500", image: scienceCover, accent: "diff-blue" },
+      { id: "science-plant-nutrition", title: "التغذية عند النبات", unit: "الوحدة 1", credit: "2500", image: scienceCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
+      { id: "science-genetics", title: "الوراثة والجينات", unit: "الوحدة 2", credit: "2500", image: scienceCover, accent: "diff-medium", description: "الوراثة والتكاثر عند الكائنات الحية مع ملخصات جاهزة.", branches: [], professorId: "zid-anes" },
+      { id: "science-organ-functions", title: "وظائف الأعضاء الحيوية", unit: "الوحدة 3", credit: "2500", image: scienceCover, accent: "diff-blue", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
     ],
   },
   {
@@ -71,9 +81,9 @@ export const COURSE_SECTIONS = [
     title: "اللغة العربية",
     dot: "#F43F5E",
     courses: [
-      { id: "arabic-grammar", title: "القواعد والنحو", unit: "الوحدة 1", credit: "2500", image: scienceCover, accent: "diff-easy" },
-      { id: "arabic-rhetoric", title: "البلاغة", unit: "الوحدة 2", credit: "2500", image: scienceCover, accent: "diff-medium" },
-      { id: "arabic-literary-texts", title: "النصوص الأدبية", unit: "الوحدة 3", credit: "2500", image: scienceCover, accent: "diff-advanced" },
+      { id: "arabic-grammar", title: "القواعد والنحو", unit: "الوحدة 1", credit: "2500", image: scienceCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
+      { id: "arabic-rhetoric", title: "البلاغة", unit: "الوحدة 2", credit: "2500", image: scienceCover, accent: "diff-medium", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
+      { id: "arabic-literary-texts", title: "النصوص الأدبية", unit: "الوحدة 3", credit: "2500", image: scienceCover, accent: "diff-advanced", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
     ],
   },
 ];
@@ -146,11 +156,17 @@ export const EXERCISE_TABS = [
 ];
 
 // Opened in the PDF viewer (/dashboard/pdf/:id) with the chip + meta as subtitle.
+// Like the باك AI decks, exercises are not sold: each comes with its unit
+// (`courseId`, null when its unit is not published yet) and opens with it.
 export const COURSE_EXERCISES = [
-  { id: "courses-ex-integration", subject: "math", chip: "الرياضيات", title: "تمارين التكامل بالتجزئة والتعويض", meta: "12 صفحة · 2.4 MB · محلولة" },
-  { id: "courses-ex-kirchhoff", subject: "physics", chip: "الفيزياء", title: "تمارين التيار الكهربائي وقوانين كيرشوف", meta: "18 صفحة · 3.1 MB · حلول" },
-  { id: "courses-ex-genetics", subject: "science", chip: "علوم الطبيعة", title: "تمارين الوراثة والتكاثر", meta: "10 صفحة · 1.8 MB · محلولة" },
-  { id: "courses-ex-grammar", subject: "arabic", chip: "اللغة العربية", title: "تمارين القواعد والبلاغة", meta: "14 صفحة · 2.0 MB · ملخص" },
-  { id: "courses-ex-exponential", subject: "math", chip: "الرياضيات", title: "تمارين الدوال الأسية واللوغاريتمية", meta: "16 صفحة · 2.7 MB · محلولة" },
-  { id: "courses-ex-waves", subject: "physics", chip: "الفيزياء", title: "تمارين الموجات والضوء", meta: "11 صفحة · 1.9 MB · حلول" },
+  { id: "courses-ex-integration", subject: "math", chip: "الرياضيات", title: "تمارين التكامل بالتجزئة والتعويض", meta: "12 صفحة · 2.4 MB · محلولة", courseId: "math-definite-integral" },
+  { id: "courses-ex-kirchhoff", subject: "physics", chip: "الفيزياء", title: "تمارين التيار الكهربائي وقوانين كيرشوف", meta: "18 صفحة · 3.1 MB · حلول", courseId: "physics-electric-current" },
+  { id: "courses-ex-genetics", subject: "science", chip: "علوم الطبيعة", title: "تمارين الوراثة والتكاثر", meta: "10 صفحة · 1.8 MB · محلولة", courseId: "science-genetics" },
+  { id: "courses-ex-grammar", subject: "arabic", chip: "اللغة العربية", title: "تمارين القواعد والبلاغة", meta: "14 صفحة · 2.0 MB · ملخص", courseId: "arabic-grammar" },
+  { id: "courses-ex-exponential", subject: "math", chip: "الرياضيات", title: "تمارين الدوال الأسية واللوغاريتمية", meta: "16 صفحة · 2.7 MB · محلولة", courseId: null },
+  { id: "courses-ex-waves", subject: "physics", chip: "الفيزياء", title: "تمارين الموجات والضوء", meta: "11 صفحة · 1.9 MB · حلول", courseId: null },
 ];
+
+export function getCourseExercise(exerciseId) {
+  return COURSE_EXERCISES.find((exercise) => exercise.id === exerciseId) || null;
+}

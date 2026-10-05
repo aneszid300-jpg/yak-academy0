@@ -1,21 +1,18 @@
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { AI_DECKS, AI_TABS } from "../../data/ai.js";
 import StickerNotebook from "../../components/dashboard/StickerNotebook.jsx";
-import { useCoursesAccess } from "../../features/payments/courseAccess.js";
-import { REVIEW_STATUSES } from "../../services/paymentService.js";
+import { unitLock, useCoursesAccess } from "../../features/payments/courseAccess.js";
 
 // Decks are not sold: each comes with its unit (deck.courseId). A deck whose
 // unit the student has not bought is shown locked and leads to that UNIT's
 // checkout. While access is still loading, decks look as before and the
 // flashcards route's own gate decides.
-function deckLock(deck, access) {
-  if (access.status !== "ready") return null;
-  if (!deck.courseId) return { badge: "ستتوفر ضمن وحدتها قريباً", action: null };
-  const unit = access.access[deck.courseId];
-  if (unit?.hasAccess) return null;
-  if (REVIEW_STATUSES.includes(unit?.status)) return { badge: "الوحدة قيد المراجعة", action: "عرض الطلب" };
-  return { badge: "متاحة بعد شراء الوحدة", action: "شراء الوحدة" };
-}
+const DECK_LOCKS = {
+  unavailable: { badge: "ستتوفر ضمن وحدتها قريباً", action: null },
+  review: { badge: "الوحدة قيد المراجعة", action: "عرض الطلب" },
+  locked: { badge: "متاحة بعد شراء الوحدة", action: "شراء الوحدة" },
+};
+const deckLock = (deck, access) => DECK_LOCKS[unitLock(deck.courseId, access)] || null;
 
 // باك AI — migrated from legacy/dashboard.html #page-ai.
 // Legacy's «باك AI» is a board of revision-card decks, not a chat: there is

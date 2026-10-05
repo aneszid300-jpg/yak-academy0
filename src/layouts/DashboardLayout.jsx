@@ -8,7 +8,7 @@ import AppFooter from "../components/dashboard/AppFooter.jsx";
 // Legacy hid the top navbar on every view except home (and the missing
 // settings page), and hid the app footer on the study view. Payment pages
 // use the viewer top bar, like flashcards and the PDF viewer.
-const VIEWS_WITHOUT_TOP_NAVBAR = ["todos", "courses", "library", "ai", "study", "pdf", "flash", "payment", "wallet"];
+const VIEWS_WITHOUT_TOP_NAVBAR = ["todos", "courses", "library", "ai", "study", "pdf", "flash", "payment", "wallet", "professors"];
 const VIEWS_WITHOUT_FOOTER = ["study"];
 
 // Shared shell for every /dashboard route (legacy dashboard.html <body>):

@@ -82,6 +82,29 @@ export const PAYMENT_METHODS = [
   },
 ];
 
+// Where students send their payment receipt (reçu) — CCP top-up screen.
+// ⚠️ PLACEHOLDERS: fill in the official Yak Academy accounts before launch;
+// while a value is null its button shows «قريباً» and does nothing.
+//   whatsapp — international number, digits only (e.g. "2135XXXXXXXX")
+//   telegram — username without «@» (e.g. "YakAcademySupport")
+export const PROOF_CHANNELS = {
+  whatsapp: null, // TODO(config): official WhatsApp number
+  telegram: null, // TODO(config): official Telegram username
+};
+
+/** Link that opens a chat with Yak on that channel (null until configured). */
+export function proofChannelUrl(channel, message = "") {
+  const value = PROOF_CHANNELS[channel];
+  if (!value) return null;
+  if (channel === "whatsapp") return `https://wa.me/${value}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
+  if (channel === "telegram") return `https://t.me/${value}`;
+  return null;
+}
+
+// «الشروط العامة» page linked from the Slick-Pay screen; null = shown as plain
+// text until Yak Academy publishes its terms.
+export const TERMS_URL = null; // TODO(config): terms page URL
+
 // Shown under each payment sheet (no claims we cannot guarantee).
 export const PAYMENT_FOOTNOTE = "لا تُفعَّل أي وحدة إلا بعد تأكيد الدفع من طرف Yak Academy.";
 
