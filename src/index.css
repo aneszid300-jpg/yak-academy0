@@ -17,6 +17,14 @@
 @import "./styles/settings.css";
 @import "./styles/payment.css";
 @import "./styles/wallet.css";
+@import "./styles/live.css";
+@import "./styles/teachers.css";
+@import "./styles/professor.css";
+@import "./styles/welcome.css";
+@import "./styles/thanks.css";
+@import "./styles/access-test.css";
+@import "./styles/prof.css";
+@import "./styles/prof-calendar.css";
 
 /* Theme is driven by <html data-theme="dark">, same as the legacy pages. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));

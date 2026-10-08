@@ -28,6 +28,16 @@
 .settings-logout:hover { color: var(--electric-violet); }
 .settings-logout:disabled { opacity: .6; cursor: wait; }
 
+/* رسائل الشكر */
+.settings-letters { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.settings-letters li { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 14px; background: var(--search-bg); border: 1px solid var(--card-border); }
+.settings-letter-img { flex-shrink: 0; width: 64px; height: 44px; border-radius: 10px; background-size: cover; background-position: center; }
+.settings-letter-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.settings-letter-info b { font-size: 13.5px; font-weight: 800; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings-letter-info small { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.settings-letters .btn-outline { flex-shrink: 0; }
+
 @media (max-width: 900px) {
   .settings-fields { grid-template-columns: 1fr; }
+  .settings-letter-img { display: none; }
 }

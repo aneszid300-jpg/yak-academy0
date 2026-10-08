@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { COURSE_SECTIONS, SUBJECT_CHIPS } from "../../data/courses.js";
 import CourseCard from "../../components/dashboard/courses/CourseCard.jsx";
+import CourseRail from "../../components/dashboard/courses/CourseRail.jsx";
 import { useCoursesAccess } from "../../features/payments/courseAccess.js";
 import CourseExercises from "../../components/dashboard/courses/CourseExercises.jsx";
 
@@ -54,7 +55,9 @@ export default function Courses() {
   const chipsRef = useRef(null);
   const access = useCoursesAccess();
 
-  const setView = (next) => setSearchParams(next === "all" ? {} : { view: next });
+  // ?pay=<method> (from «محفظتي») stays while the student switches views.
+  const pay = searchParams.get("pay");
+  const setView = (next) => setSearchParams({ ...(next === "all" ? {} : { view: next }), ...(pay ? { pay } : {}) });
   // Legacy arrows: «السابق» (right side) → +200, «التالي» (left side) → −200.
   const scrollChips = (left) => chipsRef.current?.scrollBy({ left, behavior: "smooth" });
 
@@ -155,11 +158,13 @@ export default function Courses() {
                       </svg>
                     </a>
                   </div>
-                  <div className="unit-cards-grid">
+                  {/* Each subject is a rail of the same cards: three across on
+                      desktop; ‹ › appear when a row holds more than fits. */}
+                  <CourseRail label={section.title}>
                     {section.courses.map((course) => (
                       <CourseCard key={course.id} course={course} />
                     ))}
-                  </div>
+                  </CourseRail>
                 </div>
               ))}
 

@@ -1,30 +1,36 @@
-import { useCallback, useRef, useState } from "react";
-import { useBalance } from "../../features/payments/balance.js";
-import { toActivity } from "../../features/payments/activity.js";
+import { forwardRef, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { toTransfers } from "../../features/payments/activity.js";
 import { useWallet } from "../../features/payments/wallet.js";
-import { MockNotice } from "../../components/dashboard/payment/PaymentStatus.jsx";
-import TopUpModal from "../../components/dashboard/payment/TopUpModal.jsx";
-import WalletActivity from "../../components/dashboard/payment/WalletActivity.jsx";
+import { WalletTransfers } from "../../components/dashboard/payment/WalletActivity.jsx";
 import { METHOD_ICONS, WalletIcon } from "../../components/dashboard/payment/icons.jsx";
 import { paymentErrorMessage } from "../../components/dashboard/payment/messages.js";
 
-// محفظتي — /dashboard/wallet. Reads top to bottom as:
-//   balance → top up (method selector + how it works) → «سجل المحفظة».
-// Data: paymentService.getBalance() (useBalance) and getWallet() (useWallet →
-// features/payments/activity.js → WalletActivity).
-// A method opens the same method screen as the course details window
-// (TopUpModal). Nothing here marks a payment done or changes the balance.
+// مشترياتي — /dashboard/wallet (route kept). Yak Academy has no wallet: a
+// course is paid directly, then activated once the payment is confirmed.
+// One panel in the «مهامي» card language (todos.css):
+//   header     title + «الشراء متاح» chip
+//   summary    purchased courses (approved purchases, from getWallet())
+//   grid       [ كيف يتم الشحن ]  [ جميع التحويلات ]
+//              [ طرق الشحن ]
+//   Two columns on desktop, one below 900px.
+// Data: paymentService.getWallet() (useWallet → features/payments/activity.js
+// → WalletTransfers): the student's purchase records.
+// A method leads to the courses with that method kept (?pay=<id>): the
+// student picks a course there and goes straight to that method's screen
+// (CourseDetailsModal). Nothing here marks a payment done or changes the balance.
 
 const METHODS = [
-  { id: "ccp", name: "CCP", subtitle: "حوالة بريدية عبر CCP", cta: "شحن عبر CCP" },
-  { id: "baridimob", name: "BaridiMob", subtitle: "تحويل مباشر عبر BaridiMob", cta: "شحن عبر BaridiMob" },
+  { id: "ccp", name: "CCP", subtitle: "حوالة بريدية عبر CCP", cta: "الدفع عبر CCP" },
+  { id: "baridimob", name: "BaridiMob", subtitle: "تحويل مباشر عبر BaridiMob", cta: "الدفع عبر BaridiMob" },
   { id: "slickpay", name: "الدفع الإلكتروني", subtitle: "CIB أو الذهبية عبر Slick-Pay", cta: "الدفع الإلكتروني", featured: true },
 ];
 
 const STEPS = [
+  { title: "اختر الدورة", text: "اختر الدورة التي تريد شراءها." },
   { title: "اختر طريقة الدفع", text: "CCP أو BaridiMob أو الدفع الإلكتروني." },
   { title: "أتمم عملية الدفع", text: "حوّل أو ادفع حسب الطريقة المختارة." },
-  { title: "يتم تأكيد العملية", text: "نتحقق من الدفع ثم يُضاف الرصيد." },
+  { title: "يتم تأكيد العملية", text: "نتحقق من عملية الدفع، وبعد التأكيد يتم تفعيل الدورة في حسابك." },
 ];
 
 const Arrow = () => (
@@ -33,140 +39,152 @@ const Arrow = () => (
   </svg>
 );
 
-function BalanceCard({ balance, onTopUp }) {
-  const { status, balance: value } = balance;
+const HeadIcon = ({ children }) => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {children}
+  </svg>
+);
+const ICONS = {
+  methods: <HeadIcon><rect x="2" y="5" width="20" height="14" rx="2.5" /><path d="M2 10h20M6 15h4" /></HeadIcon>,
+  transfers: <HeadIcon><path d="M7 7h13l-3-3M17 17H4l3 3" /></HeadIcon>,
+  steps: <HeadIcon><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></HeadIcon>,
+};
+
+// A section card: icon tile + title + one line, then its content.
+const WalletCard = forwardRef(function WalletCard({ id, icon, title, sub, className = "", children }, ref) {
+  return (
+    <section className={"wl-card " + className} aria-labelledby={id} ref={ref}>
+      <div className="wl-card-head">
+        <span className="wl-card-icon">{ICONS[icon]}</span>
+        <div className="min-w-0">
+          <h2 id={id} className="wl-card-title">{title}</h2>
+          {sub && <p className="wl-card-sub">{sub}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+});
+
+// 3–10 → «دورات», otherwise «دورة» (0 دورة، 1 دورة، 11 دورة).
+const coursesWord = (n) => (n >= 3 && n <= 10 ? "دورات" : "دورة");
+
+function BalanceCard({ wallet, onBrowse }) {
+  const { status } = wallet;
+  const count = wallet.wallet?.ownedCount ?? 0;
   return (
     <section className="wl-balance" aria-labelledby="wlBalanceLabel">
       <div className="wl-balance-main">
         <div className="wl-balance-label" id="wlBalanceLabel">
           <WalletIcon width={16} height={16} />
-          رصيدك الحالي
+          الدورات المشتراة
         </div>
         {status === "loading" ? (
           <div className="payment-skeleton wl-balance-skeleton" aria-label="جاري التحميل" />
-        ) : value ? (
+        ) : status === "ready" ? (
           <div className="wl-balance-value">
-            <span>{value.amount.toLocaleString("en-US")}</span>
-            <small>دج</small>
+            <span>{count}</span>
+            <small>{coursesWord(count)}</small>
           </div>
         ) : (
           <div className="wl-balance-value is-unknown">—</div>
         )}
-        <p className="wl-balance-hint">
-          {value || status === "loading" ? "يمكنك استخدام رصيدك للانضمام إلى الدورات." : "سيظهر رصيدك هنا بعد ربط المحفظة."}
-        </p>
+        <p className="wl-balance-hint">يمكنك شراء الدورات والوصول إليها بعد تأكيد الدفع.</p>
       </div>
-      <button type="button" className="wl-balance-btn" onClick={onTopUp}>
-        شحن الرصيد
+      <button type="button" className="wl-balance-btn" onClick={onBrowse}>
+        تصفح الدورات
         <Arrow />
       </button>
     </section>
   );
 }
 
-function Activity() {
-  const { status, wallet, error, reload } = useWallet();
-  if (status === "loading") return <div className="payment-skeleton" style={{ height: 150, borderRadius: 16 }} aria-label="جاري التحميل" />;
+// One getWallet() feeds both lists; `render` picks which list to show.
+function WalletList({ wallet, render }) {
+  const { status, error, reload } = wallet;
+  if (status === "loading") return <div className="payment-skeleton" style={{ height: 120, borderRadius: 16 }} aria-label="جاري التحميل" />;
   if (status === "error") {
     return (
       <div className="wa-empty">
-        <div className="wa-empty-title">تعذر تحميل سجل محفظتك</div>
+        <div className="wa-empty-title">تعذر تحميل عمليات الشراء</div>
         <p className="wa-empty-text">{paymentErrorMessage(error)}</p>
         <button type="button" className="btn-outline payment-btn" onClick={reload}>إعادة المحاولة</button>
       </div>
     );
   }
-  return <WalletActivity items={toActivity(wallet)} />;
+  return render(wallet.wallet);
 }
 
 export default function Wallet() {
-  const balance = useBalance();
-  const [method, setMethod] = useState(null);
-  const close = useCallback(() => setMethod(null), []);
+  const wallet = useWallet();
+  const navigate = useNavigate();
   const methodsRef = useRef(null);
 
-  // «شحن الرصيد» brings the method selector into view and focuses its first card.
-  function toMethods() {
-    methodsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => methodsRef.current?.querySelector("button")?.focus({ preventScroll: true }), 350);
-  }
-
-  const active = balance.status !== "error";
+  const active = wallet.status !== "error";
 
   return (
     <section className="payment-page wallet-page" data-state="wallet-page">
       <div className="wl">
-        <MockNotice />
-
         <header className="wl-head">
           <div className="min-w-0">
-            <h1 className="wl-title">محفظتي</h1>
-            <p className="wl-sub">إدارة رصيدك وشحن محفظتك بسهولة</p>
+            <h1 className="wl-title">مشترياتي</h1>
+            <p className="wl-sub">إدارة دوراتك ومتابعة عمليات الشراء والدفع بسهولة</p>
           </div>
           <span className={"wl-status" + (active ? "" : " is-off")}>
             <span className="wl-status-dot" aria-hidden="true"></span>
-            {active ? "المحفظة نشطة" : "المحفظة غير متصلة بعد"}
+            {active ? "الشراء متاح" : "الشراء غير متاح حاليًا"}
           </span>
         </header>
 
-        <BalanceCard balance={balance} onTopUp={toMethods} />
+        <BalanceCard wallet={wallet} onBrowse={() => navigate("/dashboard/courses")} />
 
-        <section className="wl-section" aria-labelledby="wlMethods" ref={methodsRef}>
-          <div className="wl-section-head">
-            <h2 id="wlMethods" className="wl-section-title">اختر طريقة الشحن</h2>
-            <p className="wl-section-sub">اختر طريقة لإضافة رصيد إلى محفظتك.</p>
-          </div>
-          <div className="wl-methods">
-            {METHODS.map((m) => {
-              const Icon = METHOD_ICONS[m.id];
-              return (
-                <button key={m.id} type="button" className={"wl-method" + (m.featured ? " is-featured" : "")} data-method={m.id} aria-label={`${m.cta} — ${m.subtitle}`} onClick={() => setMethod(m.id)}>
-                  <span className="wl-method-icon"><Icon /></span>
-                  <span className="wl-method-text">
-                    <span className="wl-method-name">{m.name}</span>
-                    <span className="wl-method-sub">{m.subtitle}</span>
-                  </span>
-                  <span className="wl-method-go" aria-hidden="true"><Arrow /></span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
+        {/* right column: how a purchase works, then the methods; left: the purchases */}
+        <div className="wl-grid">
+          <div className="wl-col">
+            <WalletCard id="wlSteps" icon="steps" title="كيف تتم عملية شراء الدورة؟" className="wl-how">
+              <ol className="wl-steps">
+                {STEPS.map((step, i) => (
+                  <li key={step.title} className="wl-step">
+                    <span className="wl-step-num" aria-hidden="true">{i + 1}</span>
+                    <span className="wl-step-body">
+                      <span className="wl-step-title">{step.title}</span>
+                      <span className="wl-step-text">{step.text}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <p className="wl-how-note">
+                <b>ملاحظة:</b> لا تُحتسب عملية الشراء مكتملة ولا يتم تفعيل الدورة قبل تأكيد الدفع.
+              </p>
+            </WalletCard>
 
-        <section className="wl-card wl-how" aria-labelledby="wlSteps">
-          <h2 id="wlSteps" className="wl-card-title">كيف يتم شحن رصيدك؟</h2>
-          <ol className="wl-steps">
-            {STEPS.map((step, i) => (
-              <li key={step.title} className="wl-step">
-                <span className="wl-step-num" aria-hidden="true">{i + 1}</span>
-                <span className="wl-step-body">
-                  <span className="wl-step-title">{step.title}</span>
-                  <span className="wl-step-text">{step.text}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
-          <p className="wl-how-note">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" />
-            </svg>
-            <span>
-              <b>يُضاف الرصيد بعد التحقق من عملية الدفع.</b> لا تُحتسب العملية مكتملة قبل تأكيدها.
-            </span>
-          </p>
-        </section>
-
-        <section className="wl-section" aria-labelledby="wlHistory">
-          <div className="wl-section-head">
-            <h2 id="wlHistory" className="wl-section-title">سجل المحفظة</h2>
-            <p className="wl-section-sub">تابع طلبات الشحن وحركة رصيدك.</p>
+            <WalletCard id="wlMethods" icon="methods" title="اختر طريقة الدفع" sub="اختر الطريقة المناسبة لإتمام شراء الدورة." className="wl-recharge" ref={methodsRef}>
+              <div className="wl-methods">
+                {METHODS.map((m) => {
+                  const Icon = METHOD_ICONS[m.id];
+                  return (
+                    <button key={m.id} type="button" className={"wl-method" + (m.featured ? " is-featured" : "")} data-method={m.id} aria-label={`${m.cta} — ${m.subtitle}`} onClick={() => navigate(`/dashboard/courses?pay=${m.id}`)}>
+                      <span className="wl-method-icon"><Icon /></span>
+                      <span className="wl-method-text">
+                        <span className="wl-method-name">{m.name}</span>
+                        <span className="wl-method-sub">{m.subtitle}</span>
+                      </span>
+                      <span className="wl-method-go" aria-hidden="true"><Arrow /></span>
+                    </button>
+                  );
+                })}
+              </div>
+            </WalletCard>
           </div>
-          <Activity />
-        </section>
+
+          <div className="wl-col">
+            <WalletCard id="wlTransfers" icon="transfers" title="جميع عمليات الشراء" sub="الدورات التي اشتريتها وحالة كل عملية.">
+              <WalletList wallet={wallet} render={(w) => <WalletTransfers items={toTransfers(w)} />} />
+            </WalletCard>
+          </div>
+        </div>
       </div>
 
-      {method && <TopUpModal method={method} onClose={close} />}
     </section>
   );
 }

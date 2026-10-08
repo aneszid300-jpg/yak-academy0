@@ -1,0 +1,109 @@
+/* =========================================================
+   الجلسة المباشرة (/dashboard/live/:sessionId) — header, the stage
+   (filled by the session's provider) beside «معلومات الجلسة», then
+   «تفاصيل الجلسة». Yak tokens; .study-back-btn from study.css.
+   ========================================================= */
+
+.live-page { flex: 1 0 auto; width: 100%; display: flex; flex-direction: column; gap: 16px; animation: yak-page-in .25s ease; }
+
+/* ---------- top bar = .study-topbar (study.css) ---------- */
+.live-topbar-start { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.live-topbar-title { margin: 0; }
+@media (max-width: 640px) {
+  .live-topbar .live-topbar-title { order: 3; flex-basis: 100%; text-align: right; white-space: normal; }
+}
+
+/* ---------- header (error / not found) ---------- */
+.live-head { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; box-shadow: var(--shadow-subtle); }
+.live-head-main { flex: 1; min-width: 0; }
+.live-kicker { font-size: 12px; font-weight: 800; color: var(--electric-violet); }
+.live-kicker-subject { color: var(--text-muted); font-weight: 700; }
+.live-title { margin: 2px 0 0; font-size: 20px; font-weight: 900; line-height: 1.4; color: var(--text-main); }
+.live-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 3px; font-size: 12.5px; font-weight: 700; color: var(--text-muted); }
+.live-back { flex-shrink: 0; }
+
+/* status badge: red = live (pulsing dot), amber = soon, grey = ended */
+.live-badge { flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.live-badge i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.live-badge.is-live { background: rgba(239, 68, 68, .1); color: #DC2626; }
+.live-badge.is-live i { animation: live-pulse 1.6s ease-in-out infinite; }
+.live-badge.is-soon { background: rgba(245, 158, 11, .14); color: #B45309; }
+.live-badge.is-ended { background: var(--search-bg); color: var(--text-muted); }
+@keyframes live-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, .45); } 50% { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); } }
+
+/* ---------- stage + side ---------- */
+.live-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.live-main { min-width: 0; }
+
+.live-stage { position: relative; overflow: hidden; aspect-ratio: 16 / 9; border-radius: 22px; background: linear-gradient(160deg, #1A1230 0%, #0D0818 60%, #120C22 100%); box-shadow: var(--shadow-subtle); display: flex; align-items: center; justify-content: center; }
+.live-stage::before { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 60% at 50% 40%, rgba(123, 79, 224, .22), transparent 70%); pointer-events: none; }
+.live-stage-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 440px; padding: 24px; text-align: center; color: #fff; }
+.live-stage-icon { width: 64px; height: 64px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(123, 79, 224, .25); color: #DDD6FE; box-shadow: 0 0 0 8px rgba(123, 79, 224, .12); margin-bottom: 4px; }
+.live-stage.is-live .live-stage-icon { background: rgba(239, 68, 68, .2); color: #FCA5A5; box-shadow: 0 0 0 8px rgba(239, 68, 68, .1); }
+.live-stage-title { margin: 0; font-size: 19px; font-weight: 900; }
+.live-stage-text { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.8; color: rgba(255, 255, 255, .72); }
+.live-stage-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 8px; }
+.live-stage-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 24px; font-size: 14px; border-radius: 12px; text-decoration: none; }
+.live-stage-btn:focus-visible, .live-stage-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.live-stage-link { padding: 4px 8px; border: none; background: none; color: #DDD6FE; font-family: inherit; font-size: 12.5px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.live-stage-link:hover { color: #fff; }
+.live-stage.is-loading { background: var(--lavender-mist); box-shadow: none; }
+.live-stage-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+.live-stage-provider { margin-top: 6px; font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, .45); }
+
+.live-card { padding: 18px 20px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; box-shadow: var(--shadow-subtle); }
+.live-card-title { margin: 0 0 12px; font-size: 15px; font-weight: 900; color: var(--text-main); }
+.live-card-sub { margin: 14px 0 6px; font-size: 13px; font-weight: 900; color: var(--text-main); }
+.live-facts { margin: 0; display: flex; flex-direction: column; }
+.live-facts > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--card-border); }
+.live-facts > div:first-child { border-top: none; padding-top: 0; }
+.live-facts dt { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+.live-facts dd { margin: 0; font-size: 13px; font-weight: 800; color: var(--text-main); text-align: end; }
+.live-desc { margin: 0; font-size: 12.5px; font-weight: 600; line-height: 1.8; color: var(--text-muted); }
+
+/* ---------- not found / error ---------- */
+.live-problem { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 20px; text-align: center; }
+.live-problem-title { margin: 0; font-size: 17px; font-weight: 900; color: var(--text-main); }
+.live-problem-text { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
+/* ---------- details ---------- */
+.live-details-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.live-details-grid .live-card-sub { margin-top: 0; }
+.live-topics, .live-resources { margin: 0; padding-inline-start: 18px; font-size: 13px; font-weight: 600; line-height: 2; color: var(--text-main); }
+.live-resources a { color: var(--electric-violet); font-weight: 800; }
+.live-empty { margin: 0; padding: 16px; border: 1px dashed var(--card-border); border-radius: 14px; text-align: center; font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1100px) {
+  .live-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .live-head { flex-wrap: wrap; padding: 14px 16px; }
+  .live-head-main { order: 3; flex-basis: 100%; }
+  .live-back { order: 1; }
+  .live-head > .live-badge { order: 2; margin-inline-start: auto; }
+  .live-title { font-size: 17.5px; }
+  .live-stage { aspect-ratio: auto; min-height: 300px; border-radius: 18px; }
+  .live-stage-btn { width: 100%; justify-content: center; }
+  .live-stage-actions { align-self: stretch; }
+  .live-stage-title { font-size: 16.5px; }
+  .live-details-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+[data-theme="dark"] .live-badge.is-live { color: #FCA5A5; }
+[data-theme="dark"] .live-badge.is-soon { color: #FCD34D; }
+@media (prefers-reduced-motion: reduce) { .live-badge.is-live i { animation: none; } }
+
+/* ---------- Home: live sessions carousel (LiveCarousel) ---------- */
+.live-carousel-card { animation: live-card-in .45s cubic-bezier(.22, .61, .36, 1); }
+@keyframes live-card-in { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+.live-carousel-subject { flex-shrink: 0; padding: 2px 8px; border-radius: 999px; background: var(--lavender-mist); color: var(--primary-violet); font-size: 10px; font-weight: 800; white-space: nowrap; }
+[data-theme="dark"] .live-carousel-subject { color: #C4B5FD; }
+.live-carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
+.live-carousel-dot { width: 6px; height: 6px; padding: 0; border: none; border-radius: 999px; background: var(--card-border); cursor: pointer; transition: width .25s, background .25s; }
+.live-carousel-dot.is-active { width: 18px; background: var(--electric-violet); }
+.live-carousel-dot:focus-visible { outline: 2px solid var(--electric-violet); outline-offset: 2px; }
+/* bigger tap area without a bigger dot */
+.live-carousel-dot { position: relative; }
+.live-carousel-dot::before { content: ""; position: absolute; inset: -8px -4px; }
+@media (prefers-reduced-motion: reduce) { .live-carousel-card { animation: none; } .live-carousel-dot { transition: none; } }

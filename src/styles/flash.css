@@ -1,11 +1,12 @@
 /* =========================================================
-   Flashcards (بطاقات المراجعة · QCM) — rules copied from
-   legacy/dashboard.html (#page-flash), in legacy source order.
+   Flashcards (بطاقات المراجعة · QCM) — laid out like the course Study
+   page (study.css); this file styles the question card, the choices and
+   the feedback.
    The side list reuses .study-lesson-info / .study-lesson-name
    (study.css) and the buttons .btn-outline / .btn-violet
-   (dashboard-home.css), exactly as legacy does. The unused legacy
-   flip-card rules (.flash-flip, .flash-face…) are not migrated:
-   legacy replaced flipping with QCM («بدل قلب البطاقة»).
+   (dashboard-home.css). The unused legacy flip-card rules
+   (.flash-flip, .flash-face…) are not migrated: legacy replaced
+   flipping with QCM («بدل قلب البطاقة»).
    ========================================================= */
 
 .flash-page {
@@ -14,99 +15,91 @@
   animation: yak-page-in .25s ease;
 }
 
-/* earlier, generic rule — the later one below overrides parts of it */
-.flash-progress-fill {
-  height: 100%;
-  border-radius: 10px;
-  background: linear-gradient(90deg, var(--primary-violet), var(--electric-violet));
-}
+/* Page structure = the course Study page (study.css): .study-topbar,
+   .study-layout, .study-progress-card, .study-content-card, .study-lesson-item,
+   .study-lesson-bar, .study-nav-row. Only the QCM parts live here. */
 
-/* .viewer-page-wrap / .viewer-topbar / .viewer-back-btn … are shared with
-   the PDF viewer and live in viewer.css. */
+/* rows keep their natural height (the page wrap is full height) */
+.flash-page .study-layout { align-content: start; }
 
-.flash-study-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; direction: ltr; align-items: start; }
-.flash-side { direction: rtl; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 14px; box-shadow: var(--shadow-subtle); max-height: calc(100vh - 120px); overflow: auto; position: sticky; top: 16px; }
-.flash-main { direction: rtl; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.flash-progress-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.flash-progress-bar { flex: 1; height: 8px; border-radius: 99px; background: var(--lavender-mist); overflow: hidden; }
-.flash-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-violet), var(--electric-violet)); transition: width 0.3s ease; }
-.flash-nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-.flash-deck-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: right; border: 1px solid transparent; background: transparent; border-radius: 12px; padding: 10px 12px; cursor: pointer; font-family: inherit; color: var(--text-main); margin-bottom: 4px; }
-.flash-deck-item:hover { background: var(--hover-nav-bg); }
-.flash-deck-item.active { background: var(--lavender-mist); color: var(--primary-violet); font-weight: 800; }
-@media (max-width: 900px) {
-  .flash-study-layout { grid-template-columns: 1fr !important; }
-  .flash-side { position: static !important; max-height: 220px; order: 2; }
-  .flash-main { order: 1; }
-}
+/* question list: answered wrong / not yet (answered right = .is-done) */
+.study-lesson-item.is-wrong .study-lesson-icon { color: #EF4444; }
+.qcm-item-num { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; background: var(--lavender-mist); color: var(--primary-violet); font-size: 11px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.study-lesson-item.active .qcm-item-num { background: var(--electric-violet); color: #fff; }
+.study-lesson-item:focus-visible, .study-unit-toggle:focus-visible, .study-nav-btn:focus-visible, .study-back-btn:focus-visible { outline: 2px solid var(--electric-violet); outline-offset: 2px; }
+.qcm-reset-btn { gap: 6px; color: var(--text-muted); }
+.qcm-reset-btn:hover { color: #B91C1C; border-color: rgba(239, 68, 68, .3); background: rgba(239, 68, 68, .06); }
+.qcm-end-note { margin: -2px 0 0; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--text-muted); }
 
-/* ---------- QCM (بدل قلب البطاقة) ---------- */
-.qcm-question-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 22px;
-  padding: 22px 20px;
-  box-shadow: var(--shadow-subtle);
-  direction: rtl;
-}
-.qcm-q-label {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--electric-violet);
-  background: var(--lavender-mist);
-  padding: 4px 12px;
-  border-radius: 99px;
-  margin-bottom: 12px;
-}
-.qcm-question-text {
-  font-size: 18px;
-  font-weight: 900;
-  color: var(--text-main);
-  line-height: 1.55;
-  margin-bottom: 18px;
-}
+/* ---------- QCM card (بدل قلب البطاقة) ---------- */
+.qcm-question-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 22px 24px 24px; box-shadow: var(--shadow-subtle); direction: rtl; }
+.qcm-q-label { display: inline-block; font-size: 11px; font-weight: 800; color: var(--electric-violet); background: var(--lavender-mist); padding: 3px 10px; border-radius: 99px; margin-bottom: 10px; }
+.qcm-question-text { margin: 0 0 20px; font-size: 20px; font-weight: 900; line-height: 1.7; color: var(--text-main); overflow-wrap: anywhere; }
+
 .qcm-choices { display: flex; flex-direction: column; gap: 10px; }
 .qcm-choice {
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
+  min-height: 54px;
   text-align: right;
   border: 1.5px solid var(--card-border);
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--card-bg);
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
+  line-height: 1.6;
   color: var(--text-main);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color .18s, background .18s, color .18s, box-shadow .18s, opacity .18s, transform .12s;
 }
 [data-theme="dark"] .qcm-choice { background: rgba(255, 255, 255, 0.04); }
 .qcm-choice:hover:not(:disabled) { border-color: var(--electric-violet); background: var(--hover-nav-bg); }
-.qcm-choice-letter {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--lavender-mist);
-  color: var(--primary-violet);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-.qcm-choice.selected { border-color: var(--electric-violet); box-shadow: 0 0 0 3px rgba(123, 79, 224, 0.12); }
-.qcm-choice.correct { border-color: #10B981; background: rgba(16, 185, 129, 0.12); color: #047857; }
-.qcm-choice.correct .qcm-choice-letter { background: #10B981; color: #fff; }
-.qcm-choice.wrong { border-color: #EF4444; background: rgba(239, 68, 68, 0.1); color: #B91C1C; }
-.qcm-choice.wrong .qcm-choice-letter { background: #EF4444; color: #fff; }
+.qcm-choice:hover:not(:disabled) .qcm-choice-letter { background: var(--electric-violet); color: #fff; }
+.qcm-choice:active:not(:disabled) { transform: scale(.995); }
+.qcm-choice:focus-visible { outline: 2px solid var(--electric-violet); outline-offset: 2px; }
+.qcm-choice-letter { width: 32px; height: 32px; border-radius: 9px; background: var(--lavender-mist); color: var(--primary-violet); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; flex-shrink: 0; transition: background .18s, color .18s; }
+/* formulas / Latin text keep their own direction, aligned like the Arabic ones */
+.qcm-choice-text { flex: 1; min-width: 0; text-align: right; unicode-bidi: isolate; overflow-wrap: anywhere; }
+.qcm-choice-mark { flex-shrink: 0; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; }
+
+/* after answering: the picked one + the correct one stand out, others fade */
+.qcm-choices.is-answered .qcm-choice:not(.correct):not(.wrong) { opacity: .55; }
+.qcm-choice.selected { box-shadow: 0 0 0 3px rgba(123, 79, 224, 0.12); }
+.qcm-choice.correct { border-color: #10B981; background: rgba(16, 185, 129, 0.1); color: #047857; }
+.qcm-choice.correct .qcm-choice-letter, .qcm-choice.correct .qcm-choice-mark { background: #10B981; color: #fff; }
+.qcm-choice.wrong { border-color: #EF4444; background: rgba(239, 68, 68, 0.08); color: #B91C1C; }
+.qcm-choice.wrong .qcm-choice-letter, .qcm-choice.wrong .qcm-choice-mark { background: #EF4444; color: #fff; }
+.qcm-choice.correct.selected { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+.qcm-choice.wrong.selected { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12); }
 .qcm-choice:disabled { cursor: default; }
-.qcm-feedback { margin-top: 14px; padding: 12px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; display: none; }
-.qcm-feedback.show { display: block; }
-.qcm-feedback.ok { background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.25); }
-.qcm-feedback.bad { background: rgba(239, 68, 68, 0.1); color: #B91C1C; border: 1px solid rgba(239, 68, 68, 0.25); }
-.qcm-score { font-size: 13px; font-weight: 800; color: var(--electric-violet); }
+[data-theme="dark"] .qcm-choice.correct { color: #6ee7b7; }
+[data-theme="dark"] .qcm-choice.wrong { color: #fca5a5; }
+
+/* feedback: opens smoothly instead of popping in */
+.qcm-feedback-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .22s ease; }
+.qcm-feedback-wrap.show { grid-template-rows: 1fr; }
+.qcm-feedback-wrap > .qcm-feedback { overflow: hidden; min-height: 0; }
+.qcm-feedback { display: flex; align-items: flex-start; gap: 8px; margin-top: 0; padding: 0 14px; border-radius: 12px; font-size: 13.5px; font-weight: 700; line-height: 1.7; border: 1px solid transparent; transition: margin-top .22s ease, padding .22s ease; }
+.qcm-feedback-wrap.show > .qcm-feedback { margin-top: 14px; padding: 10px 14px; }
+.qcm-feedback svg { flex-shrink: 0; margin-top: 4px; }
+.qcm-feedback b { font-weight: 900; }
+.qcm-feedback-letter { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; margin-inline: 2px; padding: 0 5px; border-radius: 6px; background: rgba(239, 68, 68, .12); vertical-align: 1px; }
+.qcm-feedback.ok { background: rgba(16, 185, 129, 0.1); color: #047857; border-color: rgba(16, 185, 129, 0.25); }
+.qcm-feedback.bad { background: rgba(239, 68, 68, 0.08); color: #B91C1C; border-color: rgba(239, 68, 68, 0.22); }
+[data-theme="dark"] .qcm-feedback.ok { color: #6ee7b7; }
+[data-theme="dark"] .qcm-feedback.bad { color: #fca5a5; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 640px) {
+  .qcm-question-card { padding: 18px 16px; border-radius: 18px; }
+  .qcm-question-text { font-size: 17.5px; margin-bottom: 16px; }
+  .qcm-choice { min-height: 52px; font-size: 14.5px; padding: 10px 12px; }
+  .study-lesson-bar .qcm-reset-btn { margin-inline-start: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qcm-choice, .qcm-choice-letter, .qcm-feedback-wrap, .qcm-feedback { transition: none; }
+}

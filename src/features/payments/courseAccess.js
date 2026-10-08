@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { useAuth } from "../../hooks/useAuth.js";
 import { ALL_COURSES } from "../../data/courses.js";
 import { REVIEW_STATUSES, getContentAccessMap, getContentPrices, onPaymentChange } from "../../services/paymentService.js";
+import { recordEnrollment } from "../../services/classService.js";
 
 // Which units the signed-in student can open, and their prices — fetched once
 // for all units through paymentService and shared by every component
@@ -26,6 +27,8 @@ async function load(userId, { quiet = false } = {}) {
   try {
     const [access, prices] = await Promise.all([getContentAccessMap("course", COURSE_IDS), getContentPrices("course", COURSE_IDS)]);
     if (id === request) set({ userId, status: "ready", access, prices, error: null });
+    // A bought course counts as an enrolment for its professor (counts only).
+    Object.entries(access).forEach(([courseId, a]) => a?.hasAccess && a.purchase && recordEnrollment(courseId));
   } catch (error) {
     if (id === request) set({ ...EMPTY, userId, status: "error", error });
   }

@@ -101,7 +101,7 @@ export default function Payment() {
         actions={
           <>
             <Link to={study} className="btn-violet payment-btn">دخول الوحدة</Link>
-            <Link to="/dashboard/wallet" className="btn-outline payment-btn">محفظتي</Link>
+            <Link to="/dashboard/wallet" className="btn-outline payment-btn">مشترياتي</Link>
           </>
         }
         testId="owned"
@@ -121,7 +121,7 @@ export default function Payment() {
         chip={{ tone: "wait", label: "قيد المراجعة" }}
         actions={
           <>
-            <Link to="/dashboard/wallet" className="btn-violet payment-btn">متابعة الطلب في محفظتي</Link>
+            <Link to="/dashboard/wallet" className="btn-violet payment-btn">متابعة الطلب في مشترياتي</Link>
             {toCourses}
           </>
         }
@@ -144,7 +144,7 @@ export default function Payment() {
         chip={{ tone: "wait", label: access.accessStatus === PURCHASE_STATUS.UNDER_REVIEW ? "قيد المراجعة لدى الفريق" : "قيد المراجعة" }}
         actions={
           <>
-            <Link to="/dashboard/wallet" className="btn-violet payment-btn">محفظتي</Link>
+            <Link to="/dashboard/wallet" className="btn-violet payment-btn">مشترياتي</Link>
             {toCourses}
           </>
         }

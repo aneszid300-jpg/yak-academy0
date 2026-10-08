@@ -6,6 +6,7 @@ import { useTheme } from "../../hooks/useTheme.js";
 import { getDisplayName, getUserInitial } from "../../utils/userName.js";
 import { yakLogoPurple } from "../../assets/images/index.js";
 import { NAV_ITEMS, activeSectionFor, isSubItemActive, subItemUrl } from "./navigation.jsx";
+import NotificationsBell from "./NotificationsBell.jsx";
 
 const chevron = (
   <svg className="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="14" height="14">
@@ -15,15 +16,16 @@ const chevron = (
 
 // Legacy .sidebar: logo + collapse toggle, theme/notifications, navigation
 // with submenus, and the user card. `collapsed` is the desktop icon rail;
-// `drawerOpen` is the mobile drawer (below 900px).
-export default function Sidebar({ collapsed, onToggle, drawerOpen }) {
+// `drawerOpen` is the mobile drawer (below 900px). The student dashboard uses
+// the defaults; the professor dashboard passes its own menu and role label.
+export default function Sidebar({ collapsed, onToggle, drawerOpen, items = NAV_ITEMS, sectionFor = activeSectionFor, roleLabel = "طالب", loginPath = "/login", bell = <NotificationsBell /> }) {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const logout = useLogout();
+  const logout = useLogout(loginPath);
   const { isDark, toggleTheme } = useTheme();
 
-  const activeSection = activeSectionFor(pathname);
+  const activeSection = sectionFor(pathname);
 
   // Open submenus. Like legacy, entering a section opens its submenu and
   // it stays open until the user closes it.
@@ -94,18 +96,12 @@ export default function Sidebar({ collapsed, onToggle, drawerOpen }) {
               </svg>
             )}
           </button>
-          <button type="button" className="sidebar-icon-btn" title="الإشعارات" aria-label="الإشعارات">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            <span className="notif-dot"></span>
-          </button>
+          {bell}
         </div>
       </div>
 
       <ul className="nav-menu">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           if (!item.children) {
             const active = activeSection === item.key;
             return (
@@ -165,7 +161,7 @@ export default function Sidebar({ collapsed, onToggle, drawerOpen }) {
           </div>
           <div className="sidebar-user-info">
             <div className="sidebar-user-name">{getDisplayName(user)}</div>
-            <div className="sidebar-user-role">طالب</div>
+            <div className="sidebar-user-role">{roleLabel}</div>
           </div>
         </div>
         <button type="button" className="sidebar-logout" onClick={handleLogout} disabled={loggingOut} title="تسجيل الخروج">

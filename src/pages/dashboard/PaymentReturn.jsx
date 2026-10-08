@@ -52,7 +52,8 @@ export default function PaymentReturn() {
 
   const { phase, purchase, error } = state;
   const course = purchase ? getCourse(purchase.contentId) : null;
-  const paymentPage = course ? `/dashboard/payment/course/${course.id}` : "/dashboard/courses";
+  // Back to the unit: its gate (RequireCourseAccess) offers the purchase window again.
+  const paymentPage = course ? `/dashboard/study/${course.id}` : "/dashboard/courses";
   const toCourses = <Link to="/dashboard/courses" className="btn-outline payment-btn">العودة إلى الدورات</Link>;
 
   let content;
@@ -110,7 +111,7 @@ export default function PaymentReturn() {
         actions={
           <>
             <button type="button" className="btn-violet payment-btn" onClick={recheck}>تحقق مجدداً</button>
-            <Link to={paymentPage} className="btn-outline payment-btn">العودة إلى صفحة الدفع</Link>
+            <Link to={paymentPage} className="btn-outline payment-btn">العودة إلى الدورة</Link>
           </>
         }
         testId="pending"

@@ -20,6 +20,7 @@ import { supabase } from "../supabase.js";
 import { getCourse } from "../../data/courses.js";
 import { PaymentError, PURCHASE_STATUS as S, REVIEW_STATUSES } from "../paymentContract.js";
 import { PROOF_UPLOAD } from "../../config/paymentConfig.js";
+import { enroll } from "./classMock.js";
 
 export const MOCK_STORAGE_KEY = "yak_payment_mock";
 const METHODS = ["baridimob", "ccp", "slickpay"];
@@ -88,10 +89,23 @@ const toPublic = (p) => ({
   updatedAt: p.updatedAt,
 });
 
+// Development only (this adapter never runs in production builds): units open
+// without a purchase, to test their whole content (lessons, Live, QCM, exercises).
+// Remove an id to test its checkout again.
+export const DEV_UNLOCKED_COURSES = [
+  "physics-electrostatics", // «الكهرباء الساكنة»
+  "physics-mechanics", // «الميكانيك الكلاسيكي»
+];
+
 function accessFor(purchases, userId, contentType, contentId) {
   const mine = purchases
     .filter((p) => p.userId === userId && p.contentType === contentType && p.contentId === contentId && p.status !== S.CANCELLED)
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+  if (contentType === "course" && DEV_UNLOCKED_COURSES.includes(contentId)) {
+    // Open for development; a real (granted / bought) purchase still shows, so it counts as an enrolment.
+    const bought = mine.find((p) => p.status === S.APPROVED);
+    return { hasAccess: true, status: S.APPROVED, purchase: bought ? toPublic(bought) : null };
+  }
   const approved = mine.find((p) => p.status === S.APPROVED);
   const latest = approved || mine[0] || null;
   return { hasAccess: Boolean(approved), status: latest ? latest.status : S.NONE, purchase: latest ? toPublic(latest) : null };
@@ -180,6 +194,7 @@ export const mockAdapter = {
     // never anything in the return URL.
     if (purchase.paymentMethod === "slickpay" && purchase.status === S.PENDING && purchase.gatewayResult) {
       purchase.status = purchase.gatewayResult === "paid" ? S.APPROVED : S.REJECTED;
+      if (purchase.status === S.APPROVED && purchase.contentType === "course") enroll(purchase.contentId, purchase.userId);
       purchase.reviewNote = purchase.gatewayResult === "paid" ? null : "لم تكتمل عملية الدفع لدى Slick-Pay.";
       purchase.updatedAt = now();
       save(data);
@@ -189,8 +204,8 @@ export const mockAdapter = {
 
   async getBalance() {
     await simulate("getBalance");
-    await currentUserId();
-    return { amount: load().balance ?? 0, currency: "DZD" };
+    const userId = await currentUserId();
+    return { amount: load().balances?.[userId] ?? 0, currency: "DZD" };
   },
 
   async getPurchaseHistory() {
@@ -242,6 +257,8 @@ function review(purchaseId, decision, note) {
   const purchase = data.purchases.find((p) => p.id === purchaseId);
   if (!purchase || !REVIEW_STATUSES.includes(purchase.status)) return false;
   purchase.status = decision === "approved" ? S.APPROVED : decision === "under_review" ? S.UNDER_REVIEW : S.REJECTED;
+  // Approved = enrolled: counted for the course's professor at once (the real server does the same).
+  if (purchase.status === S.APPROVED && purchase.contentType === "course") enroll(purchase.contentId, purchase.userId);
   purchase.reviewNote = purchase.status === S.REJECTED ? note || "تعذر العثور على عملية الدفع بالمعلومات المرسلة." : null;
   purchase.updatedAt = now();
   save(data);
@@ -251,31 +268,39 @@ function review(purchaseId, decision, note) {
 
 export const mockReview = review;
 
+// «pretend the unit was bought»: an approved purchase for the signed-in student.
+export async function mockGrant(courseId) {
+  const userId = await currentUserId();
+  const data = load();
+  const price = priceOf("course", courseId);
+  if (!price) return false;
+  data.purchases.push({ id: newId(), userId, contentType: "course", contentId: courseId, ...price, paymentMethod: "ccp", status: S.APPROVED, createdAt: now(), updatedAt: now() });
+  enroll(courseId, userId);
+  save(data);
+  notify();
+  return true;
+}
+
+// Start over: no purchases for anyone in this tab.
+export function mockReset() {
+  save({ purchases: [] });
+  notify();
+}
+
 // Console helpers — installed by paymentService only while the mock is the active adapter.
 export function installMockDevTools() {
   window.yakPaymentMock = {
     review,
-    async grant(courseId) {
+    grant: mockGrant,
+    async setBalance(amount) {
       const userId = await currentUserId();
       const data = load();
-      const price = priceOf("course", courseId);
-      if (!price) return false;
-      data.purchases.push({ id: newId(), userId, contentType: "course", contentId: courseId, ...price, paymentMethod: "ccp", status: S.APPROVED, createdAt: now(), updatedAt: now() });
+      data.balances = { ...data.balances, [userId]: Math.max(0, Number(amount) || 0) };
       save(data);
       notify();
       return true;
     },
-    setBalance(amount) {
-      const data = load();
-      data.balance = Math.max(0, Number(amount) || 0);
-      save(data);
-      notify();
-      return true;
-    },
-    reset() {
-      save({ purchases: [] });
-      notify();
-    },
+    reset: mockReset,
     state: load,
   };
 }

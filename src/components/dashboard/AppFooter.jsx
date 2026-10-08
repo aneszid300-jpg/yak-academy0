@@ -14,13 +14,16 @@ export default function AppFooter() {
           <div className="flex items-center gap-2.5">
             <img src={yakLogoPurple} alt="Yak Academy" className="h-10 w-auto max-w-40 object-contain object-left" />
           </div>
-          <p className="text-[12.5px] font-semibold text-text-muted">مع ياك ڨاع تجيبواالباك</p>
+          {/* Brand tagline: Cairo ExtraBold, Yak muted grey (follows light/dark) */}
+          <p className="m-0 font-['Cairo',var(--font-yak)] text-[13px] leading-[1.6] font-extrabold text-text-muted max-[640px]:text-[12.5px]">
+            ياك تجاوبك على كل ياك
+          </p>
         </div>
 
         <ul className="flex flex-wrap items-center gap-6 max-[640px]:gap-x-5 max-[640px]:gap-y-2">
           <li><Link to="/#story" className={footerLink}>من نحن</Link></li>
           <li><Link to="/dashboard/courses" className={footerLink}>الدورات</Link></li>
-          <li><a href="#" className={footerLink}>المدونة</a></li>
+          <li><Link to="/dashboard/teachers" className={footerLink}>أساتذتنا</Link></li>
           <li><Link to="/#contact" className={footerLink}>اتصل بنا</Link></li>
         </ul>
 

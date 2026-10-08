@@ -15,7 +15,7 @@
 // never decides that something is paid.
 
 import { PaymentError, PURCHASE_STATUS, REVIEW_STATUSES } from "./paymentContract.js";
-import { installMockDevTools, mockAdapter, mockGatewayPurchase, mockGatewayResult, mockReview } from "./mock/paymentMock.js";
+import { installMockDevTools, mockAdapter, mockGatewayPurchase, mockGatewayResult, mockGrant, mockReset, mockReview } from "./mock/paymentMock.js";
 
 // Types, statuses and the error class (see paymentContract.js for the shapes).
 export { PURCHASE_STATUS, REVIEW_STATUSES, PaymentError } from "./paymentContract.js";
@@ -61,7 +61,7 @@ if (isMockPayments) {
 
 /** Mock only (null otherwise): simulated gateway and Yak-team review, for the demo pages. */
 export const devTools = isMockPayments
-  ? { review: mockReview, gatewayResult: mockGatewayResult, gatewayPurchase: mockGatewayPurchase }
+  ? { review: mockReview, grant: mockGrant, reset: mockReset, gatewayResult: mockGatewayResult, gatewayPurchase: mockGatewayPurchase }
   : null;
 
 /* ---------- public API (the backend contract) ---------- */

@@ -1,5 +1,29 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getPdf } from "../../data/pdfs.js";
+import { getUploadedExercise, isUploadId, uploadFileUrl } from "../../services/contentService.js";
+
+// A file a professor uploaded (contentService): its URL is fetched, then freed.
+function useUploadedPdf(id) {
+  const [url, setUrl] = useState(undefined); // undefined = loading, null = missing
+  useEffect(() => {
+    if (!isUploadId(id)) return;
+    let active = true;
+    let made = null;
+    uploadFileUrl(id).then((u) => {
+      made = u;
+      if (active) setUrl(u);
+    });
+    return () => {
+      active = false;
+      if (made) URL.revokeObjectURL(made);
+    };
+  }, [id]);
+  if (!isUploadId(id)) return null;
+  const file = getUploadedExercise(id);
+  if (!file || url === null) return { missing: true };
+  return { title: file.title, meta: file.meta, url, loading: url === undefined };
+}
 
 // معاينة PDF — migrated from legacy/dashboard.html #page-pdf: the browser's
 // own PDF viewer in an iframe, with «فتح في تبويب جديد» and «تحميل» links.
@@ -11,8 +35,10 @@ export default function PdfViewer() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const uploaded = useUploadedPdf(id);
+
   if (!id) return <Navigate to="/dashboard/library" replace />; // legacy had no viewer without a file
-  const pdf = getPdf(id);
+  const pdf = uploaded ? (uploaded.missing ? null : uploaded) : getPdf(id);
   if (!pdf) {
     return (
       <section className="pdf-page">
@@ -46,10 +72,10 @@ export default function PdfViewer() {
               <a className="btn-violet" href={pdf.url} target="_blank" rel="noopener">فتح في تبويب جديد</a>
               <a className="btn-outline" href={pdf.url} target="_blank" rel="noopener" download>تحميل</a>
             </div>
-            <span className="viewer-top-meta">ملف تجريبي للمعاينة</span>
+            <span className="viewer-top-meta">{uploaded ? "ملف من الأستاذ" : "ملف تجريبي للمعاينة"}</span>
           </div>
           <div className="pdf-viewer-frame-wrap">
-            <iframe title="PDF Viewer" src={pdf.url}></iframe>
+            {pdf.loading ? <div className="pdf-viewer-loading">جاري تحميل الملف...</div> : <iframe title="PDF Viewer" src={pdf.url}></iframe>}
           </div>
         </div>
       </div>

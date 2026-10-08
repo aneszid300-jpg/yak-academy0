@@ -1,0 +1,39 @@
+/* =========================================================
+   منح الوصول (تجريبي) — /dashboard/access. TEMPORARY test page until the
+   admin dashboard: one row per course, its access, and the mock's actions.
+   Built on .section-card / .btn-violet / .btn-outline.
+   ========================================================= */
+
+.ax-page { flex: 1 0 auto; width: 100%; animation: yak-page-in .25s ease; }
+.ax-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.ax-note { margin: 6px 0 0; font-size: 12.5px; color: var(--text-muted); }
+.ax-reset { flex-shrink: 0; }
+
+.ax-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ax-list li { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 14px; background: var(--search-bg); border: 1px solid var(--card-border); }
+.ax-img { flex-shrink: 0; width: 64px; height: 44px; border-radius: 10px; background-size: cover; background-position: center; }
+.ax-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ax-info b { font-size: 13.5px; font-weight: 800; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ax-info small { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+.ax-chip { flex-shrink: 0; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 800; background: var(--btn-outline-bg); border: 1px solid var(--card-border); color: var(--text-muted); }
+.ax-chip.is-ok { background: rgba(16, 185, 129, .12); border-color: rgba(16, 185, 129, .3); color: #047857; }
+.ax-chip.is-wait { background: rgba(245, 158, 11, .12); border-color: rgba(245, 158, 11, .3); color: #B45309; }
+.ax-chip.is-bad { background: rgba(244, 63, 94, .1); border-color: rgba(244, 63, 94, .3); color: #BE123C; }
+.ax-chip.is-dev { background: var(--lavender-mist); border-color: rgba(123, 79, 224, .25); color: var(--primary-violet); }
+
+.ax-actions { flex-shrink: 0; display: flex; gap: 6px; min-width: 112px; justify-content: flex-end; }
+.ax-btn { height: 36px; padding: 0 14px; border-radius: 10px; font-size: 12.5px; }
+.ax-btn.is-danger:hover { color: #BE123C; border-color: #BE123C; }
+.ax-btn:disabled { opacity: .55; cursor: wait; }
+
+@media (max-width: 700px) {
+  .ax-list li { flex-wrap: wrap; }
+  .ax-img { display: none; }
+  .ax-actions { min-width: 0; }
+}
+
+[data-theme="dark"] .ax-chip.is-ok { color: #6EE7B7; }
+[data-theme="dark"] .ax-chip.is-wait { color: #FCD34D; }
+[data-theme="dark"] .ax-chip.is-bad { color: #FDA4AF; }
+[data-theme="dark"] .ax-chip.is-dev { color: #C4B5FD; }

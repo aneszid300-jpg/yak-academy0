@@ -51,9 +51,9 @@ export const COURSE_SECTIONS = [
     title: "الرياضيات",
     dot: null, // default dot colour (--electric-violet)
     courses: [
-      { id: "math-equations", title: "المعادلات والمتراجحات", unit: "الوحدة 2", credit: "2500", image: mathCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
-      { id: "math-limits", title: "النهايات والاتصال", unit: "الوحدة 3", credit: "2500", image: mathCover, accent: "diff-medium", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
-      { id: "math-definite-integral", title: "التكامل المحدد", unit: "الوحدة 4", credit: "2500", image: mathCover, accent: "diff-advanced", description: "شرح مفصل للتكامل بالتجزئة والتعويض مع تمارين محلولة.", branches: [], professorId: "zid-anes" },
+      { id: "math-equations", title: "المعادلات والمتراجحات", unit: "الوحدة 2", credit: "2500", image: mathCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "demo-sara-belkacem" },
+      { id: "math-limits", title: "النهايات والاتصال", unit: "الوحدة 3", credit: "2500", image: mathCover, accent: "diff-medium", description: COURSE_DESCRIPTION, branches: [], professorId: "demo-sara-belkacem" },
+      { id: "math-definite-integral", title: "التكامل المحدد", unit: "الوحدة 4", credit: "2500", image: mathCover, accent: "diff-advanced", description: "شرح مفصل للتكامل بالتجزئة والتعويض مع تمارين محلولة.", branches: [], professorId: "demo-sara-belkacem" },
     ],
   },
   {
@@ -71,9 +71,9 @@ export const COURSE_SECTIONS = [
     title: "علوم الطبيعة والحياة",
     dot: "#10B981",
     courses: [
-      { id: "science-plant-nutrition", title: "التغذية عند النبات", unit: "الوحدة 1", credit: "2500", image: scienceCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
-      { id: "science-genetics", title: "الوراثة والجينات", unit: "الوحدة 2", credit: "2500", image: scienceCover, accent: "diff-medium", description: "الوراثة والتكاثر عند الكائنات الحية مع ملخصات جاهزة.", branches: [], professorId: "zid-anes" },
-      { id: "science-organ-functions", title: "وظائف الأعضاء الحيوية", unit: "الوحدة 3", credit: "2500", image: scienceCover, accent: "diff-blue", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
+      { id: "science-plant-nutrition", title: "التغذية عند النبات", unit: "الوحدة 1", credit: "2500", image: scienceCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "demo-youcef-hamdi" },
+      { id: "science-genetics", title: "الوراثة والجينات", unit: "الوحدة 2", credit: "2500", image: scienceCover, accent: "diff-medium", description: "الوراثة والتكاثر عند الكائنات الحية مع ملخصات جاهزة.", branches: [], professorId: "demo-youcef-hamdi" },
+      { id: "science-organ-functions", title: "وظائف الأعضاء الحيوية", unit: "الوحدة 3", credit: "2500", image: scienceCover, accent: "diff-blue", description: COURSE_DESCRIPTION, branches: [], professorId: "demo-youcef-hamdi" },
     ],
   },
   {
@@ -81,9 +81,9 @@ export const COURSE_SECTIONS = [
     title: "اللغة العربية",
     dot: "#F43F5E",
     courses: [
-      { id: "arabic-grammar", title: "القواعد والنحو", unit: "الوحدة 1", credit: "2500", image: scienceCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
-      { id: "arabic-rhetoric", title: "البلاغة", unit: "الوحدة 2", credit: "2500", image: scienceCover, accent: "diff-medium", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
-      { id: "arabic-literary-texts", title: "النصوص الأدبية", unit: "الوحدة 3", credit: "2500", image: scienceCover, accent: "diff-advanced", description: COURSE_DESCRIPTION, branches: [], professorId: "zid-anes" },
+      { id: "arabic-grammar", title: "القواعد والنحو", unit: "الوحدة 1", credit: "2500", image: scienceCover, accent: "diff-easy", description: COURSE_DESCRIPTION, branches: [], professorId: "demo-leila-mourad" },
+      { id: "arabic-rhetoric", title: "البلاغة", unit: "الوحدة 2", credit: "2500", image: scienceCover, accent: "diff-medium", description: COURSE_DESCRIPTION, branches: [], professorId: "demo-leila-mourad" },
+      { id: "arabic-literary-texts", title: "النصوص الأدبية", unit: "الوحدة 3", credit: "2500", image: scienceCover, accent: "diff-advanced", description: COURSE_DESCRIPTION, branches: [], professorId: "demo-leila-mourad" },
     ],
   },
 ];

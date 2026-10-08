@@ -1,8 +1,13 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.js";
 import { useLogout } from "../../hooks/useLogout.js";
 import { useTheme } from "../../hooks/useTheme.js";
 import { getFullName, getUserInitial } from "../../utils/userName.js";
+import { ALL_COURSES } from "../../data/courses.js";
+import { useCoursesAccess } from "../../features/payments/courseAccess.js";
+import { thanksDate } from "../../features/thanks/letters.js";
+import { formatPayDate } from "../../components/dashboard/payment/messages.js";
 
 // الإعدادات — NEW. Legacy had a «الإعدادات» nav item but no settings page, so
 // this small page is built from the dashboard's existing pieces: the signed-in
@@ -30,6 +35,12 @@ export default function Settings() {
   const name = getFullName(user);
   const email = user?.email || "";
   const phone = user?.user_metadata?.phone || user?.phone || "";
+
+  // رسائل الشكر: one per course the student owns, newest first.
+  const { status: accessStatus, access } = useCoursesAccess();
+  const letters = ALL_COURSES.filter((c) => access[c.id]?.hasAccess)
+    .map((c) => ({ course: c, date: thanksDate(access[c.id]) }))
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
   const [loggingOut, setLoggingOut] = useState(false);
   async function handleLogout() {
@@ -96,6 +107,50 @@ export default function Settings() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* ---------- بطاقة الترحيب (shown once on the first visit; a copy here) ---------- */}
+        <div className="section-card">
+          <div className="section-header">
+            <div className="section-title">بطاقة الترحيب</div>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="settings-note m-0!">رسالتنا لك من أول يوم في ياك، احتفظ بها متى شئت.</p>
+            <Link to="/dashboard/welcome" className="btn-outline settings-logout">
+              <i className="fa-regular fa-envelope-open"></i>
+              عرض بطاقة الترحيب
+            </Link>
+          </div>
+        </div>
+
+        {/* ---------- رسائل الشكر (one per course bought; each opens its letter) ---------- */}
+        <div className="section-card">
+          <div className="section-header">
+            <div className="section-title">رسائل الشكر</div>
+          </div>
+          <p className="settings-note">رسالة لكل دورة اشتريتها، نحتفظ بها لك هنا.</p>
+          {letters.length > 0 ? (
+            <ul className="settings-letters">
+              {letters.map(({ course, date }) => (
+                <li key={course.id}>
+                  <span className="settings-letter-img" style={{ backgroundImage: `url(${course.image})` }} aria-hidden="true" />
+                  <span className="settings-letter-info">
+                    <b>{course.title}</b>
+                    <small>
+                      {course.subject}
+                      {date && ` · ${formatPayDate(date)}`}
+                    </small>
+                  </span>
+                  <Link to={`/dashboard/thanks?course=${course.id}`} className="btn-outline settings-logout">
+                    <i className="fa-regular fa-envelope-open"></i>
+                    عرض الرسالة
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="settings-note m-0!">{accessStatus === "ready" ? "ستجد هنا رسالة شكر لكل دورة تشتريها." : "جاري التحميل..."}</p>
+          )}
         </div>
 
         {/* ---------- تسجيل الخروج ---------- */}

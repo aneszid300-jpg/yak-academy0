@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getCourse, getCourseLessons } from "../../data/courses.js";
 import { useCourseProgress } from "../../features/courses/progress.js";
 import VideoPlayer from "../../components/dashboard/study/VideoPlayer.jsx";
+import { CourseContent } from "../../components/dashboard/courses/CourseContent.jsx";
+import { recordVisit } from "../../services/classService.js";
 
 // Study — migrated from legacy/dashboard.html #page-study.
 // The lesson comes from the URL (/dashboard/study/:courseId/:lessonId);
@@ -23,16 +25,14 @@ function StudyCourse() {
   const course = getCourse(courseId);
   const lessons = useMemo(() => getCourseLessons(courseId), [courseId]);
   const { done, doneCount, total, pct, markDone: saveDone } = useCourseProgress(courseId);
-  const [unitOpen, setUnitOpen] = useState(true);
 
   const index = lessons.findIndex((lesson) => lesson.id === lessonId);
 
-  // Legacy re-rendered the list (open) every time the lesson or progress changed.
-  const [lastRender, setLastRender] = useState({ index, done });
-  if (lastRender.index !== index || lastRender.done !== done) {
-    setLastRender({ index, done });
-    setUnitOpen(true);
-  }
+  // Opening the course counts as activity (the professor's «الداخلون»).
+  useEffect(() => {
+    if (course) recordVisit(course.id);
+  }, [course]);
+
 
   if (!course) {
     return (
@@ -95,52 +95,8 @@ function StudyCourse() {
               <p className="study-progress-hint">{hint}</p>
             </div>
 
-            <div className="study-content-card">
-              <div className="study-content-head">
-                <span className="study-content-title">محتوى الدورة</span>
-                <span className="study-content-count">{doneCount}/{total} درس</span>
-              </div>
-              <div className="study-content-list">
-                <div className={"study-unit-block" + (unitOpen ? " is-open" : "")}>
-                  <button type="button" className="study-unit-toggle" aria-expanded={unitOpen} onClick={() => setUnitOpen((open) => !open)}>
-                    <span className="study-unit-num">1</span>
-                    <span className="study-unit-name">{course.title}</span>
-                    <span className="study-unit-meta">{total} دروس</span>
-                    <svg className="study-unit-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </button>
-                  <div className="study-unit-lessons">
-                    {lessons.map((item, i) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className={"study-lesson-item" + (i === index ? " active" : "") + (done[item.id] ? " is-done" : "")}
-                        aria-current={i === index ? "true" : undefined}
-                        onClick={() => goToLesson(i)}
-                      >
-                        <span className="study-lesson-icon">
-                          {done[item.id] ? (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                              <path d="M20 6 9 17l-5-5" />
-                            </svg>
-                          ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="2" y="4" width="20" height="14" rx="3" />
-                              <path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none" />
-                            </svg>
-                          )}
-                        </span>
-                        <span className="study-lesson-info">
-                          <span className="study-lesson-name">{item.title}</span>
-                          <span className="study-lesson-meta">{(item.duration || "") + (done[item.id] ? " · مكتمل" : "")}</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* «دروس الدورة»: lessons, Live, QCM, exercises (CourseContent) */}
+            <CourseContent courseId={course.id} currentLessonId={lesson.id} done={done} lessonState={location.state} />
           </aside>
 
           <div className="study-main">

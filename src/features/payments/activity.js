@@ -1,35 +1,48 @@
 import { getCourse } from "../../data/courses.js";
+import { PURCHASE_STATUS } from "../../services/paymentService.js";
 
-// «سجل المحفظة»: one activity model for every wallet operation, built from
-// paymentService.getWallet() — the single source of truth.
+// «محفظتي» data, built from paymentService.getWallet() — two separate lists:
 //
-//   ActivityItem { id, kind, amount, method, date, status, note }
-//     kind   "topup"    — a payment request through CCP / BaridiMob / Slick-Pay
-//                          (each method keeps its own status flow: Slick-Pay
-//                          pending → approved, manual ones submitted →
-//                          under_review → approved | rejected)
-//            "transfer" — a movement of the wallet balance, with
-//                          direction "in" (credit) | "out" (debit).
-//                          The payment contract does not expose these yet; when
-//                          getWallet() returns them, map them here and they show
-//                          up in «جميع التحويلات» with no UI change.
-//     method payment method id (topups) or null
-//     note   context line (the unit the payment is for)
+//   toTopUpRequests(wallet) → «طلبات الشحن»: payment requests through
+//     CCP / BaridiMob / Slick-Pay (CIB-الذهبية), each with its own status flow
+//     (Slick-Pay pending → approved; manual: submitted → under_review →
+//     approved | rejected).
+//     Request { id, method, amount, date, status }
+//
+//   toTransfers(wallet) → «جميع التحويلات»: the student's course purchases —
+//     one entry per purchase record of getWallet().history (the server's
+//     getPurchaseHistory() for the signed-in student), so a purchase never
+//     shows twice. Cancelled attempts are left out.
+//     Transfer { id, type: "purchase", courseId, course, image, amount,
+//                date, status }
+//
+// Both newest first.
 
-export const ACTIVITY_KINDS = { TOPUP: "topup", TRANSFER: "transfer" };
+const byNewest = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
 
-/** wallet (from useWallet) → ActivityItem[], newest first. */
-export function toActivity(wallet) {
+export function toTopUpRequests(wallet) {
   if (!wallet) return [];
-  const topups = wallet.history.map((p) => ({
-    id: p.id,
-    kind: ACTIVITY_KINDS.TOPUP,
-    amount: p.amount,
-    method: p.paymentMethod,
-    date: p.updatedAt,
-    status: p.status,
-    note: getCourse(p.contentId)?.title || null,
-  }));
-  const transfers = []; // not provided by the payment contract yet (see above)
-  return [...topups, ...transfers].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  return wallet.history
+    .map((p) => ({ id: p.id, method: p.paymentMethod, amount: p.amount, date: p.updatedAt, status: p.status }))
+    .sort(byNewest);
+}
+
+export function toTransfers(wallet) {
+  if (!wallet) return [];
+  return wallet.history
+    .filter((p) => p.status !== PURCHASE_STATUS.CANCELLED)
+    .map((p) => {
+      const course = getCourse(p.contentId);
+      return {
+        id: p.id,
+        type: "purchase",
+        courseId: p.contentId,
+        course: course?.title || "دورة",
+        image: course?.image || null,
+        amount: p.amount,
+        date: p.updatedAt,
+        status: p.status,
+      };
+    })
+    .sort(byNewest);
 }

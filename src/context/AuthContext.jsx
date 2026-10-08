@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "../services/supabase.js";
+import { setStorageUser } from "../utils/storedValue.js";
 
 const AuthContext = createContext(null);
 
@@ -24,11 +25,14 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(({ data, error }) => {
       if (!active) return;
       if (error) console.error("❌ Cannot get session:", error);
+      // Each account reads its own saved data (todos, progress…), before anything renders with it.
+      setStorageUser(data?.session?.user?.id);
       setSession(data?.session ?? null);
       setLoading(false);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setStorageUser(nextSession?.user?.id);
       setSession(nextSession);
     });
 

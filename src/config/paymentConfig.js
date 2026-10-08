@@ -1,9 +1,9 @@
 // Payment content shown to students: currency, what a unit includes, and the
 // three payment methods with their instructions.
 //
-// ⚠️ PLACEHOLDERS: the recipient details below are intentionally empty (null).
-// Replace them with the official Yak Academy BaridiMob / CCP details before
-// launch. Until then the page says «سيتم إضافتها قريباً» instead of a number.
+// Recipient details: the BaridiMob RIP is set; the details still null (CCP,
+// BaridiMob beneficiary name) are placeholders to fill with the official Yak
+// Academy details before launch — until then the page says «سيتم إضافتها قريباً».
 // This file holds public information only: never put API keys or secrets here.
 
 export const CURRENCY = { code: "DZD", label: "دج" };
@@ -76,20 +76,20 @@ export const PAYMENT_METHODS = [
       "خذ لقطة شاشة للوصل وأرفقها مع رقم العملية في الاستمارة.",
     ],
     recipient: [
-      { key: "rip", label: "رقم الحساب (RIP)", value: null, ltr: true }, // TODO(config): official Yak RIP
+      { key: "rip", label: "رقم الحساب (RIP)", value: "00799999004022228493", ltr: true }, // official Yak RIP
       { key: "name", label: "اسم المستفيد", value: null }, // TODO(config): official account holder
     ],
   },
 ];
 
-// Where students send their payment receipt (reçu) — CCP top-up screen.
-// ⚠️ PLACEHOLDERS: fill in the official Yak Academy accounts before launch;
-// while a value is null its button shows «قريباً» and does nothing.
+// Where students send their payment receipt (reçu) — BaridiMob / CCP screens.
+// While a value is null its button shows «قريباً» and does nothing.
 //   whatsapp — international number, digits only (e.g. "2135XXXXXXXX")
-//   telegram — username without «@» (e.g. "YakAcademySupport")
+//   telegram — username without «@» (e.g. "YakAcademySupport"), or the
+//              international number, digits only (opens t.me/+<number>)
 export const PROOF_CHANNELS = {
-  whatsapp: null, // TODO(config): official WhatsApp number
-  telegram: null, // TODO(config): official Telegram username
+  whatsapp: "213799198562", // official Yak Academy WhatsApp (+213 799 19 85 62)
+  telegram: "213799198562", // official Yak Academy Telegram (same number)
 };
 
 /** Link that opens a chat with Yak on that channel (null until configured). */
@@ -97,7 +97,7 @@ export function proofChannelUrl(channel, message = "") {
   const value = PROOF_CHANNELS[channel];
   if (!value) return null;
   if (channel === "whatsapp") return `https://wa.me/${value}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
-  if (channel === "telegram") return `https://t.me/${value}`;
+  if (channel === "telegram") return /^\d+$/.test(value) ? `https://t.me/+${value}` : `https://t.me/${value}`;
   return null;
 }
 

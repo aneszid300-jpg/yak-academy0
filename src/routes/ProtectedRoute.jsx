@@ -8,7 +8,7 @@ import AuthLoader from "../components/auth/AuthLoader.jsx";
 // 2. no session → /login,
 // 3. session → confirm the user with the server (getUser, as the legacy
 //    protectDashboard() did) before rendering.
-export default function ProtectedRoute() {
+export default function ProtectedRoute({ loginPath = "/login" }) {
   const { session, loading, supabase } = useAuth();
   const location = useLocation();
   const [verified, setVerified] = useState(null); // null = checking
@@ -31,9 +31,9 @@ export default function ProtectedRoute() {
   }, [userId]);
 
   if (loading) return <AuthLoader />;
-  if (!session) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (!session) return <Navigate to={loginPath} replace state={{ from: location }} />;
   if (verified === null) return <AuthLoader />;
-  if (!verified) return <Navigate to="/login" replace />;
+  if (!verified) return <Navigate to={loginPath} replace />;
 
   return <Outlet />;
 }

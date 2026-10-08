@@ -1,20 +1,31 @@
-import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
-import { getCourse, getCourseExercise } from "../../../data/courses.js";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { SUBJECT_NAMES, getCourse, getCourseExercise } from "../../../data/courses.js";
+import { getUploadedExercise } from "../../../services/contentService.js";
 import { getAiDeck } from "../../../data/ai.js";
+import { formatPrice } from "../../../config/paymentConfig.js";
 import { useCourseAccess } from "../../../features/payments/courseAccess.js";
-import { REVIEW_STATUSES } from "../../../services/paymentService.js";
+import { PURCHASE_STATUS, REVIEW_STATUSES } from "../../../services/paymentService.js";
+import { useCourseCheckout } from "../courses/useCourseCheckout.jsx";
 import { StatusCard } from "./PaymentStatus.jsx";
 import { BackIcon } from "./icons.jsx";
 import { paymentErrorMessage } from "./messages.js";
 
 // Route guards for paid content. They decide what the student SEES; real
-// protection of lesson videos and flashcards must also exist on the server.
+// protection of lesson videos, flashcards and exercises must also exist on the
+// server. Access is checked (courseAccess → paymentService) BEFORE the content
+// renders: nothing of a QCM or an exercise loads while access is unknown.
+// Course, QCM and exercise share one gate (UnitContentGate) and one purchase
+// path (useCourseCheckout → the unit's details window → CCP / BaridiMob /
+// Slick-Pay):
 //
-//   <RequireCourseAccess>  study/:courseId(/:lessonId) — no access → payment page
-//   <RequireDeckAccess>    flash/:deckId — the deck's unit decides; no access →
-//                          explain that the cards come with the unit
-//   <RequireExerciseAccess> pdf/:id — same for «تمارين الدورات» (exercise.courseId);
-//                          other PDFs (Library papers) are free and pass through
+//   <RequireCourseAccess>   study/:courseId(/:lessonId) — the unit itself
+//   <RequireDeckAccess>     flash/:deckId — باك AI QCM; the deck's unit decides
+//   <RequireExerciseAccess> pdf/:id — «تمارين الدورات» (exercise.courseId);
+//                           other PDFs (Library papers) are free and pass through
+//
+// No access → a locked card whose action opens the purchase window; a request
+// under review → its status, followed in «محفظتي»; approved → the content,
+// without a reload (onPaymentChange refreshes courseAccess).
 
 function Checking() {
   return (
@@ -49,15 +60,32 @@ function AccessError({ error, onRetry }) {
 
 export function RequireCourseAccess({ children }) {
   const { courseId } = useParams();
-  const location = useLocation();
   const course = getCourse(courseId);
-  const access = useCourseAccess(courseId);
-
   if (!course) return children; // the study page shows «الدورة غير موجودة»
-  if (access.status === "error") return <AccessError error={access.error} onRetry={access.reload} />;
-  if (access.status !== "ready") return <Checking />;
-  if (access.hasAccess) return children;
-  return <Navigate to={`/dashboard/payment/course/${course.id}`} replace state={{ from: location.state?.from }} />;
+  return (
+    <UnitContentGate
+      courseId={course.id}
+      title={course.title}
+      meta="دورة"
+      fallbackFrom="/dashboard/courses"
+      backLabel="العودة إلى الدورات"
+      copy={() => ({
+        testPrefix: "course",
+        unavailable: null, // a course is always its own unit
+        review: {
+          title: `طلب اشتراكك في دورة «${course.title}» قيد المراجعة`,
+          text: "ستُفتح الدورة فور تأكيد الدفع من طرف فريق Yak Academy.",
+        },
+        locked: {
+          title: "هذه الدورة متاحة بعد الاشتراك",
+          text: `اشترك في دورة «${course.title}» للوصول إلى دروسها وتمارينها وبطاقات المراجعة الخاصة بها.`,
+          cta: "انضم للدورة",
+        },
+      })}
+    >
+      {children}
+    </UnitContentGate>
+  );
 }
 
 export function RequireDeckAccess({ children }) {
@@ -79,13 +107,13 @@ export function RequireDeckAccess({ children }) {
           browse: "تصفح الوحدات",
         },
         review: {
-          title: `طلب اشتراكك في وحدة «${course?.title}» قيد المراجعة`,
+          title: `طلب اشتراكك في دورة «${course?.title}» قيد المراجعة`,
           text: "ستتمكن من استعمال هذه البطاقات فور تأكيد الدفع من طرف فريق Yak Academy.",
         },
         locked: {
-          title: "هذه البطاقات متاحة بعد الاشتراك في الوحدة",
-          text: `بطاقات «${deck.title}» جزء من وحدة «${course?.title}»، مع دروسها المسجلة وحصصها المباشرة. اشترِ الوحدة لتفتحها كلها.`,
-          cta: "شراء الوحدة",
+          title: "هذه البطاقات متاحة بعد الاشتراك في الدورة",
+          text: `بطاقات «${deck.title}» جزء من دورة «${course?.title}»، مع دروسها المسجلة وحصصها المباشرة. انضم للدورة لتفتحها كلها.`,
+          cta: "انضم للدورة",
         },
       })}
     >
@@ -96,7 +124,8 @@ export function RequireDeckAccess({ children }) {
 
 export function RequireExerciseAccess({ children }) {
   const { id } = useParams();
-  const exercise = getCourseExercise(id);
+  const uploaded = getUploadedExercise(id);
+  const exercise = getCourseExercise(id) || (uploaded && { ...uploaded, chip: SUBJECT_NAMES[getCourse(uploaded.courseId)?.subjectKey] || "" });
   if (!exercise) return children; // Library papers (free) and «الملف غير موجود»
   return (
     <UnitContentGate
@@ -128,22 +157,24 @@ export function RequireExerciseAccess({ children }) {
   );
 }
 
-// Content that comes with a unit (decks, exercises): shows it once the unit is
-// owned; otherwise a locked / under-review / not-yet-available card that leads
-// to the unit's checkout. Access comes from courseAccess (paymentService), so
-// an approved purchase opens it without a reload.
+// A unit or content that comes with it (course, decks, exercises): shows it
+// once the unit is owned; otherwise a locked / under-review /
+// not-yet-available card. «انضم للدورة» opens the unit's purchase window right
+// here (useCourseCheckout). Access comes from courseAccess (paymentService), so
+// an approved purchase opens the content without a reload.
 function UnitContentGate({ courseId, title, meta, fallbackFrom, backLabel, copy, children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const course = courseId ? getCourse(courseId) : null;
   const access = useCourseAccess(course?.id);
+  const from = location.state?.from || fallbackFrom;
+  const checkout = useCourseCheckout(from);
 
   if (course && access.status === "error") return <AccessError error={access.error} onRetry={access.reload} />;
   if (course && access.status !== "ready") return <Checking />;
   if (course && access.hasAccess) return children;
 
   const text = copy(course);
-  const from = location.state?.from || fallbackFrom;
   const back = (
     <button type="button" className="btn-outline payment-btn" onClick={() => navigate(from)}>{backLabel}</button>
   );
@@ -172,7 +203,7 @@ function UnitContentGate({ courseId, title, meta, fallbackFrom, backLabel, copy,
         chip={{ tone: "wait", label: "قيد المراجعة" }}
         actions={
           <>
-            <Link to={`/dashboard/payment/course/${course.id}`} state={{ from }} className="btn-violet payment-btn">عرض حالة الطلب</Link>
+            <Link to="/dashboard/wallet" className="btn-violet payment-btn">متابعة طلباتي</Link>
             {back}
           </>
         }
@@ -185,11 +216,18 @@ function UnitContentGate({ courseId, title, meta, fallbackFrom, backLabel, copy,
         icon="lock"
         title={text.locked.title}
         text={text.locked.text}
+        chip={
+          access.accessStatus === PURCHASE_STATUS.REJECTED
+            ? { tone: "bad", label: "لم يتم تأكيد طلبك السابق" }
+            : access.price
+              ? { tone: "info", label: `السعر: ${formatPrice(access.price.amount)}` }
+              : null
+        }
         actions={
           <>
-            <Link to={`/dashboard/payment/course/${course.id}`} state={{ from }} className="btn-violet payment-btn">
+            <button type="button" className="btn-violet payment-btn" aria-haspopup="dialog" onClick={() => checkout.open(course.id)}>
               {text.locked.cta}
-            </Link>
+            </button>
             {back}
           </>
         }
@@ -211,6 +249,7 @@ function UnitContentGate({ courseId, title, meta, fallbackFrom, backLabel, copy,
         </div>
         {card}
       </div>
+      {checkout.modal}
     </section>
   );
 }

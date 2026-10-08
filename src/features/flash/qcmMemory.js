@@ -1,11 +1,10 @@
-import { readRaw, writeRaw } from "../../utils/storedValue.js";
+import { readRaw, removeRaw, writeRaw } from "../../utils/storedValue.js";
 
 // QCM progress per deck — legacy loadQcmMemory / saveQcmMemory /
 // resetQcmMemory, same keys and format:
-//   localStorage["yak_qcm_<deck title>"] =
+//   localStorage["yak_qcm_<deck title>::<userId>"] =
 //     { score, answered: { "<card index>": { selected, ok } }, index, updatedAt }
-// The key uses the deck's Arabic title, like legacy, so saved progress
-// carries over between the old and the new site.
+// The key uses the deck's Arabic title, like legacy, per account (storedValue.js).
 
 export const qcmStorageKey = (title) => "yak_qcm_" + String(title || "default").trim();
 
@@ -35,9 +34,5 @@ export function saveQcmMemory(title, { score, answered, index }) {
 }
 
 export function resetQcmMemory(title) {
-  try {
-    localStorage.removeItem(qcmStorageKey(title));
-  } catch {
-    // storage unavailable
-  }
+  removeRaw(qcmStorageKey(title));
 }

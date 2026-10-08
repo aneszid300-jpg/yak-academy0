@@ -1,10 +1,10 @@
-import { useCallback, useId, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useId } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { formatPrice } from "../../../config/paymentConfig.js";
 import { useCourseProgress } from "../../../features/courses/progress.js";
 import { useCourseAccess } from "../../../features/payments/courseAccess.js";
 import { REVIEW_STATUSES } from "../../../services/paymentService.js";
-import CourseDetailsModal from "./CourseDetailsModal.jsx";
+import { useCourseCheckout } from "./useCourseCheckout.jsx";
 import CourseGlyph from "./CourseGlyph.jsx";
 
 // Course tile, built to the reference card: cover photo with a subject tile
@@ -13,8 +13,8 @@ import CourseGlyph from "./CourseGlyph.jsx";
 // depends on the student's purchase (see CARD_STATE). The card is coloured by
 // its legacy .diff-* class.
 // The whole card is one action. Units are paid: an owned unit opens its study
-// page; any other opens its details window (CourseDetailsModal), from which
-// the student continues to the unit's checkout (a «قيد المراجعة» badge shows
+// page; any other opens its details window (useCourseCheckout →
+// CourseDetailsModal), from which the student continues to the unit's checkout (a «قيد المراجعة» badge shows
 // while a request is checked). While access is still loading the card goes to
 // the study route, whose access gate decides.
 
@@ -45,10 +45,11 @@ export default function CourseCard({ course }) {
 
   // Payments unavailable (error) still offers the unit; its checkout then explains.
   const state = owned ? CARD_STATE.PURCHASED : ready || access.status === "error" ? CARD_STATE.NOT_PURCHASED : CARD_STATE.LOADING;
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const closeDetails = useCallback(() => setDetailsOpen(false), []);
+  // ?pay=<method>: chosen earlier in «محفظتي» → the window opens on that method.
+  const [params] = useSearchParams();
+  const checkout = useCourseCheckout(from, params.get("pay"));
   const open = () =>
-    state === CARD_STATE.NOT_PURCHASED ? setDetailsOpen(true) : navigate(`/dashboard/study/${course.id}`, { state: { from } });
+    state === CARD_STATE.NOT_PURCHASED ? checkout.open(course.id) : navigate(`/dashboard/study/${course.id}`, { state: { from } });
   const { total: lessons, pct: progress } = useCourseProgress(course.id);
   const ids = { layer: uid + "l", panel: uid + "p", glow: uid + "g", blur: uid + "b", shade: uid + "s" };
 
@@ -147,7 +148,7 @@ export default function CourseCard({ course }) {
       </div>
 
       {/* Outside the card, so clicks in the window never reach the card's own handler. */}
-      {detailsOpen && <CourseDetailsModal course={course} price={access.price} from={from} onClose={closeDetails} />}
+      {checkout.modal}
     </>
   );
 }

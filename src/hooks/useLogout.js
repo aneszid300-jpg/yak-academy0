@@ -2,8 +2,9 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./useAuth.js";
 
-// Legacy auth.js logout(): sign out, then go to the login page.
-export function useLogout() {
+// Legacy auth.js logout(): sign out, then go to the login page (the
+// professors' own page from their dashboard).
+export function useLogout(loginPath = "/login") {
   const { signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -13,7 +14,7 @@ export function useLogout() {
       console.error("❌ Logout error:", error);
       return false;
     }
-    navigate("/login", { replace: true });
+    navigate(loginPath, { replace: true });
     return true;
-  }, [signOut, navigate]);
+  }, [signOut, navigate, loginPath]);
 }

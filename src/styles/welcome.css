@@ -1,0 +1,123 @@
+/* =========================================================
+   بطاقة الترحيب (/dashboard/welcome) — a business card that turns
+   over: front = greeting by name, back = the letter + our signature.
+   Transforms/opacity only; tilt, float and sheen off with
+   prefers-reduced-motion.
+   ========================================================= */
+
+.wc-page { flex: 1 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; min-height: calc(100vh - 32px); padding: 24px 12px; }
+
+@keyframes wc-arrive { from { opacity: 0; transform: translateY(26px) scale(.94); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes wc-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes wc-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes wc-sweep { from { transform: translateX(-120%) skewX(-18deg); } to { transform: translateX(220%) skewX(-18deg); } }
+@keyframes wc-stamp { from { opacity: 0; transform: scale(1.8) rotate(30deg); } to { opacity: 1; transform: rotate(12deg); } }
+@keyframes wc-write { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* stage: perspective + soft glow under the card */
+.wc-stage { position: relative; perspective: 1600px; animation: wc-arrive .9s cubic-bezier(.16, 1, .3, 1) both; }
+.wc-stage::after { content: ""; position: absolute; inset-inline: 12%; bottom: -26px; height: 40px; border-radius: 50%; background: rgba(91, 58, 166, .28); filter: blur(22px); z-index: -1; animation: wc-float 6s 1s ease-in-out infinite reverse; }
+.wc-tilt { --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%; animation: wc-float 6s 1s ease-in-out infinite; }
+
+.wc-card { position: relative; display: block; width: min(600px, calc(100vw - 48px)); aspect-ratio: 1.62; padding: 0; border: none; background: none; font-family: inherit; cursor: pointer; transform-style: preserve-3d; transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .9s cubic-bezier(.2, .85, .25, 1); }
+.wc-card.is-flipped { transform: rotateX(var(--rx)) rotateY(calc(180deg + var(--ry))); }
+.wc-card:focus-visible { outline: none; }
+.wc-card:focus-visible .wc-face { box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--electric-violet), 0 24px 50px rgba(30, 15, 70, .3); }
+
+.wc-face { position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column; border-radius: 26px; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 24px 50px rgba(30, 15, 70, .28), 0 2px 6px rgba(30, 15, 70, .12); }
+
+/* ---------- front ---------- */
+.wc-front { align-items: center; justify-content: center; padding: 26px; color: #fff; background: radial-gradient(130% 100% at 100% 0%, rgba(255, 255, 255, .14), transparent 55%), linear-gradient(135deg, var(--electric-violet) 0%, var(--primary-violet) 100%); }
+.wc-marks { position: absolute; inset: 0; background: #fff; opacity: .06; pointer-events: none;
+  -webkit-mask-image: url("../assets/images/yak-mark.png"), url("../assets/images/yak-mark.png"), url("../assets/images/yak-mark.png");
+  mask-image: url("../assets/images/yak-mark.png"), url("../assets/images/yak-mark.png"), url("../assets/images/yak-mark.png");
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-size: 220px 220px, 200px 200px, 110px 110px; mask-size: 220px 220px, 200px 200px, 110px 110px;
+  -webkit-mask-position: right -60px top -70px, left -64px bottom -72px, right 26% bottom -58px; mask-position: right -60px top -70px, left -64px bottom -72px, right 26% bottom -58px; }
+/* light: follows the pointer, and sweeps once on arrival */
+.wc-sheen { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(420px circle at var(--mx) var(--my), rgba(255, 255, 255, .16), transparent 45%); }
+.wc-sheen::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .22), transparent); animation: wc-sweep 1.4s .9s ease both; }
+.wc-logo { position: absolute; top: 22px; left: 0; right: 0; margin-inline: auto; height: 34px; width: auto; filter: brightness(0) invert(1); opacity: .95; }
+.wc-greet { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; margin-top: 18px; }
+.wc-hello { font-size: 17px; font-weight: 700; color: rgba(255, 255, 255, .85); animation: wc-rise .6s .5s both; }
+.wc-name { font-size: clamp(34px, 7vw, 54px); font-weight: 900; line-height: 1.25; letter-spacing: -.5px; text-shadow: 0 6px 24px rgba(20, 8, 50, .3); animation: wc-rise .7s .62s cubic-bezier(.16, 1, .3, 1) both; }
+.wc-in { font-size: 22px; font-weight: 900; animation: wc-rise .6s .76s both; }
+.wc-yak { position: relative; display: inline-block; }
+.wc-tagline { margin-top: 16px; font-size: 14px; font-weight: 700; color: rgba(255, 255, 255, .8); animation: wc-rise .6s .9s both; }
+.wc-underline { position: absolute; bottom: -8px; right: 0; width: 100%; height: 14px; overflow: visible; }
+
+/* ---------- back: the letter ---------- */
+.wc-back { transform: rotateY(180deg); padding: 26px 30px 20px; text-align: start; color: var(--text-main); background: repeating-linear-gradient(180deg, transparent 0 27px, rgba(123, 79, 224, .06) 27px 28px), #FFFDF8; }
+.wc-back::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; width: 6px; background: linear-gradient(180deg, var(--electric-violet), var(--primary-violet)); }
+.wc-back-mark { position: absolute; inset-inline-end: -40px; bottom: -46px; width: 170px; height: 170px; background: var(--electric-violet); opacity: .06; transform: rotate(-12deg); -webkit-mask: url("../assets/images/yak-mark.png") center / contain no-repeat; mask: url("../assets/images/yak-mark.png") center / contain no-repeat; }
+.wc-back-logo { position: absolute; top: 22px; left: 26px; height: 28px; aspect-ratio: 3; background: left center / contain no-repeat; }
+.wc-letter { position: relative; display: flex; flex-direction: column; gap: 6px; }
+/* «إلى …» — same handwritten Ruqaa as the team line */
+.wc-to { font-family: 'Aref Ruqaa', var(--font-auth); font-size: 22px; font-weight: 700; line-height: 1.5; word-spacing: .2em; color: var(--primary-violet); }
+.wc-line { font-size: 14.5px; font-weight: 600; line-height: 2; color: #2D2440; opacity: .85; }
+.wc-promise { margin-top: 6px; font-size: 15px; font-weight: 800; line-height: 1.8; color: #2D2440; }
+.wc-promise b { color: var(--electric-violet); font-weight: 900; }
+.wc-sign { position: relative; display: flex; flex-direction: column; align-items: flex-start; margin-top: auto; font-size: 12px; color: #6B6280; }
+/* our handwritten signature (assets/images/yak-signature.png), inked in Yak violet;
+   it «writes» itself left to right once the card has turned */
+.wc-signature { display: block; width: 150px; aspect-ratio: 3; margin: 2px 0; background: var(--primary-violet); -webkit-mask: url("../assets/images/yak-signature.png") left center / contain no-repeat; mask: url("../assets/images/yak-signature.png") left center / contain no-repeat; clip-path: inset(0 100% 0 0); }
+.wc-card.is-flipped .wc-signature { animation: wc-write 1.4s .6s cubic-bezier(.45, .05, .35, 1) both; }
+/* «بكل حب،» — same handwritten Ruqaa as the team line */
+.wc-sign-by { font-family: 'Aref Ruqaa', var(--font-auth); font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--primary-violet); }
+/* «فريق Yak Academy» — handwritten (Ruqaa), like a note signed by hand */
+.wc-sign b { font-family: 'Aref Ruqaa', var(--font-auth); font-size: 16px; font-weight: 700; line-height: 1.4; word-spacing: .25em; color: var(--primary-violet); }
+/* the date, with our gold seal (same as the thank-you letter) right above it */
+.wc-dated { position: absolute; inset-inline-end: 30px; bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.wc-seal { width: 64px; aspect-ratio: 343 / 360; background: url("../assets/images/yak-wax-seal.png") center / contain no-repeat; transform: rotate(12deg); filter: drop-shadow(0 4px 5px rgba(40, 20, 50, .35)); opacity: 0; }
+.wc-card.is-flipped .wc-seal { animation: wc-stamp .5s 1.6s cubic-bezier(.3, 1.6, .5, 1) both; }
+.wc-date { font-size: 11px; font-weight: 700; color: #8A819C; }
+/* the letter's lines appear once the card has turned */
+.wc-letter > * { opacity: 0; transform: translateY(6px); transition: opacity .45s ease, transform .45s ease; }
+.wc-card.is-flipped .wc-letter > * { opacity: 1; transform: none; }
+.wc-card.is-flipped .wc-letter > :nth-child(1) { transition-delay: .35s; }
+.wc-card.is-flipped .wc-letter > :nth-child(2) { transition-delay: .45s; }
+.wc-card.is-flipped .wc-letter > :nth-child(3) { transition-delay: .55s; }
+.wc-card.is-flipped .wc-letter > :nth-child(4) { transition-delay: .65s; }
+
+/* ---------- under the card ---------- */
+.wc-after { display: flex; flex-direction: column; align-items: center; gap: 10px; animation: wc-rise .6s 1.2s both; }
+.wc-flip-btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border: 1px solid var(--card-border); border-radius: 999px; background: var(--card-bg); color: var(--text-main); font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-subtle); transition: border-color .2s, color .2s, transform .15s; }
+.wc-flip-btn:hover { border-color: var(--electric-violet); color: var(--electric-violet); }
+/* the label, in Cairo like the Yak tagline */
+.wc-flip-btn { font-family: var(--font-auth); font-size: 14px; font-weight: 800; color: var(--primary-violet); letter-spacing: .1px; }
+[data-theme="dark"] .wc-flip-btn { color: #C4B5FD; }
+.wc-flip-btn:active { transform: scale(.97); }
+.wc-flip-btn:focus-visible { outline: 2px solid var(--electric-violet); outline-offset: 3px; }
+.wc-start { display: inline-flex; align-items: center; height: 42px; padding: 0 22px; border-radius: 999px; background: linear-gradient(135deg, var(--electric-violet), var(--primary-violet)); color: #fff; font-family: var(--font-auth); font-size: 14px; font-weight: 800; text-decoration: none; box-shadow: 0 10px 22px rgba(91, 58, 166, .28); transition: transform .15s, box-shadow .2s; }
+.wc-start:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(91, 58, 166, .34); }
+.wc-start:focus-visible { outline: 2px solid var(--electric-violet); outline-offset: 3px; }
+.wc-keep { margin: 0; max-width: 420px; text-align: center; font-size: 13px; font-weight: 700; line-height: 1.8; color: var(--text-muted); }
+
+/* ---------- small screens: a portrait card ---------- */
+@media (max-width: 640px) {
+  .wc-card { width: min(360px, calc(100vw - 40px)); aspect-ratio: .64; }
+  .wc-face { border-radius: 24px; }
+  .wc-logo { top: 26px; height: 30px; }
+  .wc-hello { font-size: 16px; }
+  .wc-in { font-size: 20px; }
+  .wc-back { padding: 28px 22px 22px; }
+  .wc-to { font-size: 20px; }
+  .wc-line { font-size: 13.5px; line-height: 2; }
+  .wc-promise { font-size: 14px; }
+  .wc-dated { inset-inline-end: 22px; bottom: 22px; }
+  .wc-seal { width: 54px; }
+  .wc-back-logo { top: 26px; left: 20px; height: 24px; }
+}
+
+[data-theme="dark"] .wc-stage::after { background: rgba(0, 0, 0, .55); }
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-stage, .wc-stage::after, .wc-tilt, .wc-hello, .wc-name, .wc-in, .wc-tagline, .wc-after, .wc-sheen::after { animation: none; }
+  .wc-card { transform: rotateY(0); transition: transform .4s ease; }
+  .wc-card.is-flipped { transform: rotateY(180deg); }
+  .wc-letter > * { opacity: 1; transform: none; transition: none; }
+  .wc-signature { clip-path: none; }
+  .wc-card.is-flipped .wc-signature { animation: none; }
+  .wc-seal { opacity: 1; }
+  .wc-card.is-flipped .wc-seal { animation: none; }
+}

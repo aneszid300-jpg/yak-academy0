@@ -1,13 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import { aiRobot } from "../../assets/images/index.js";
 import { getCourse } from "../../data/courses.js";
+import LiveCarousel from "../../components/dashboard/home/LiveCarousel.jsx";
 import CourseCard from "../../components/dashboard/courses/CourseCard.jsx";
+import CourseRail from "../../components/dashboard/courses/CourseRail.jsx";
 import { useSubjectSetupPrompt } from "../../features/todos/useSubjectSetupPrompt.js";
 import TodoPreview from "../../components/dashboard/home/TodoPreview.jsx";
 import SubjectColorsModal from "../../components/dashboard/todos/SubjectColorsModal.jsx";
 
 // Dashboard Home — migrated from legacy/dashboard.html #page-home.
-// Figures, courses and the live session are the same hard-coded data as legacy.
+// Figures and courses are the same hard-coded data as legacy; the live sessions
+// come from liveService (LiveCarousel) and «انضم الآن» opens each one's page.
 
 const STATS = [
   { className: "stat-lessons", title: "دروس اليوم", icon: "📖", value: "3", unit: "دروس" },
@@ -66,19 +69,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ---------- live session ---------- */}
-          <div className="mb-1 flex items-center justify-between gap-3 rounded-2xl border border-hero-border bg-hero-bg px-4 py-3 shadow-(--shadow-subtle) transition-[background,border-color] duration-300">
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-              <div className="rounded-[20px] bg-[#EF4444] px-[9px] py-[3px] text-[10px] font-bold whitespace-nowrap text-white">مباشر</div>
-              <div className="min-w-0">
-                <div className="truncate text-[13px] font-extrabold text-text-main">جلسة مراجعة شاملة في الفيزياء</div>
-                <div className="mt-0.5 text-[11px] text-text-muted">20:00 - 22:00</div>
-              </div>
-            </div>
-            <button type="button" className="btn-violet" style={{ padding: "8px 16px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>
-              انضم الآن
-            </button>
-          </div>
+          {/* ---------- live sessions: one card at a time (LiveCarousel) ---------- */}
+          <LiveCarousel />
 
           {/* ---------- latest courses ---------- */}
           <div className="section-card">
@@ -89,11 +81,13 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="unit-cards-grid">
+            {/* The home column is narrower than the Courses grid: the same cards
+                in a rail, so each keeps a readable width. */}
+            <CourseRail label="أحدث الدورات">
               {LATEST_COURSES.map((course) => (
                 <CourseCard key={course.id} course={course} />
               ))}
-            </div>
+            </CourseRail>
           </div>
 
           {/* ---------- continue learning ---------- */}

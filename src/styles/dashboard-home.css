@@ -381,3 +381,4 @@
 @container (max-width: 420px) {
   .home-course-grid { grid-template-columns: 1fr; }
 }
+

@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
 import { useTheme } from "../hooks/useTheme.js";
 import { useBodyScope } from "../hooks/useBodyScope.js";
+import { isProfessor } from "../features/roles.js";
 
 // Arabic messages — same wording as legacy/login.html.
 function loginErrorMessage(error) {
@@ -12,11 +13,45 @@ function loginErrorMessage(error) {
   return "تعذر تسجيل الدخول. حاول مرة أخرى.";
 }
 
-export default function Login() {
+// Two doors, same page: students sign in at /login, professors at
+// /prof/login («دخول الأساتذة»). Each door only lets its own accounts in
+// (features/roles.js); the other kind is signed out again and pointed to
+// its own page. Professors have no sign-up or Google sign-in here: their
+// accounts are set up by the Yak team.
+const VARIANTS = {
+  student: {
+    home: "/dashboard",
+    badge: "مرحباً بعودتك",
+    heading: <>رحلتك نحو <span className="text-sunlit-yellow">النجاح</span> تبدأ من هنا.</>,
+    text: "ادخل إلى حسابك وواصل دراستك، تابع تقدمك، واكتشف كل ما أعددناه لمساعدتك في رحلة الباك.",
+    footer: "لم نبنِ منصة فقط… بنينا مكاناً باش تقرا بطريقة أفضل.",
+    title: "تسجيل الدخول",
+    subtitle: "أدخل معلوماتك للوصول إلى حسابك.",
+    wrongRole: isProfessor,
+    wrongRoleText: "هذا حساب أستاذ. ادخل من صفحة دخول الأساتذة.",
+    otherDoor: { to: "/prof/login", label: "دخول الأساتذة" },
+  },
+  prof: {
+    home: "/prof",
+    badge: "فضاء الأساتذة",
+    heading: <>مرحباً بك أستاذ، <span className="text-sunlit-yellow">تلاميذك</span> في انتظارك.</>,
+    text: "ادخل إلى لوحة الأستاذ: دوراتك ومحتواها، جلساتك المباشرة، وملفك كما يراه التلاميذ.",
+    footer: "شكراً لأنك جزء من رحلة تلاميذ Yak.",
+    title: "دخول الأساتذة",
+    subtitle: "أدخل معلومات حسابك كأستاذ.",
+    wrongRole: (user) => !isProfessor(user),
+    wrongRoleText: "هذا الحساب ليس حساب أستاذ. التلاميذ يدخلون من صفحة تسجيل الدخول.",
+    otherDoor: { to: "/login", label: "دخول التلاميذ" },
+  },
+};
+
+export default function Login({ variant = "student" }) {
   useBodyScope("yak-scope-login");
   const { isDark, toggleTheme } = useTheme();
-  const { supabase, signIn, signInWithGoogle, requestPasswordReset } = useAuth();
+  const { supabase, session, signIn, signInWithGoogle, signOut, requestPasswordReset } = useAuth();
   const navigate = useNavigate();
+  const v = VARIANTS[variant];
+  const isProf = variant === "prof";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,7 +96,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const { error } = await signIn(trimmedEmail, password);
+      const { data, error } = await signIn(trimmedEmail, password);
 
       if (error) {
         console.error("❌ Login error:", error);
@@ -70,9 +105,17 @@ export default function Login() {
         return;
       }
 
+      // The other door's account: sign it out again and point to its page.
+      if (v.wrongRole(data?.user)) {
+        await signOut();
+        showMessage(v.wrongRoleText);
+        setLoading(false);
+        return;
+      }
+
       showMessage("تم تسجيل الدخول بنجاح. جاري فتح حسابك...", "success");
       // Small delay so the user can see the success message (legacy: 700ms).
-      setTimeout(() => navigate("/dashboard", { replace: true }), 700);
+      setTimeout(() => navigate(v.home, { replace: true }), 700);
     } catch (error) {
       console.error("❌ Unexpected login error:", error);
       showMessage("حدث خطأ غير متوقع. حاول مرة أخرى.");
@@ -142,6 +185,8 @@ export default function Login() {
     }
   }
 
+  if (!loading && session?.user && !v.wrongRole(session.user)) return <Navigate to={v.home} replace />;
+
   const inputClass =
     "h-[50px] w-full rounded-[13px] border border-card-border bg-bg-main pr-[45px] pl-[15px] text-[13px] text-text-main outline-none transition-[border-color,box-shadow,background] duration-200 placeholder:text-[#aaa6ae] focus:border-electric-violet focus:bg-card-solid focus:shadow-[0_0_0_4px_rgba(123,79,224,.10)]";
   const inputIconClass =
@@ -184,12 +229,14 @@ export default function Login() {
             <i className={isDark ? "fa-solid fa-sun" : "fa-solid fa-moon"}></i>
           </button>
 
-          <Link
-            to="/register"
-            className="inline-flex h-[42px] items-center justify-center rounded-xl bg-primary-violet px-[17px] text-[13px] font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-electric-violet max-[480px]:px-[13px]"
-          >
-            إنشاء حساب
-          </Link>
+          {!isProf && (
+            <Link
+              to="/register"
+              className="inline-flex h-[42px] items-center justify-center rounded-xl bg-primary-violet px-[17px] text-[13px] font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-electric-violet max-[480px]:px-[13px]"
+            >
+              إنشاء حساب
+            </Link>
+          )}
         </div>
       </header>
 
@@ -200,23 +247,23 @@ export default function Login() {
           <div className="auth-brand-panel relative flex flex-col justify-between overflow-hidden p-12 text-white max-[820px]:min-h-[250px] max-[820px]:p-[34px] max-[480px]:min-h-[225px] max-[480px]:px-6 max-[480px]:py-7">
             <div className="relative z-[2]">
               <div className="mb-[25px] inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,.14)] bg-[rgba(255,255,255,.11)] px-3 py-[7px] text-[12px] font-bold">
-                <i className="fa-solid fa-sparkles text-sunlit-yellow"></i>
-                <span>مرحباً بعودتك</span>
+                <i className={(isProf ? "fa-solid fa-chalkboard-user" : "fa-solid fa-sparkles") + " text-sunlit-yellow"}></i>
+                <span>{v.badge}</span>
               </div>
 
               <h2 className="mb-[18px] max-w-[330px] text-[clamp(30px,4vw,44px)] leading-[1.35] font-extrabold max-[820px]:text-[32px] max-[480px]:text-[27px]">
-                رحلتك نحو <span className="text-sunlit-yellow">النجاح</span> تبدأ من هنا.
+                {v.heading}
               </h2>
 
               <p className="max-w-[360px] text-[14px] leading-[2] text-[rgba(255,255,255,.76)] max-[480px]:text-[12px]">
-                ادخل إلى حسابك وواصل دراستك، تابع تقدمك، واكتشف كل ما أعددناه لمساعدتك في رحلة الباك.
+                {v.text}
               </p>
             </div>
 
             <div className="relative z-[2] max-[820px]:hidden">
               <div className="mb-[13px] h-1 w-[42px] rounded-[10px] bg-sunlit-yellow"></div>
               <p className="text-[12px] text-[rgba(255,255,255,.58)]">
-                لم نبنِ منصة فقط… بنينا مكاناً باش تقرا بطريقة أفضل.
+                {v.footer}
               </p>
             </div>
           </div>
@@ -224,8 +271,8 @@ export default function Login() {
           {/* ---------- FORM ---------- */}
           <div className="flex flex-col justify-center bg-card-solid px-[52px] py-12 max-[820px]:px-[30px] max-[820px]:py-[38px] max-[480px]:px-5 max-[480px]:py-[30px]">
             <div className="mb-7">
-              <h1 className="mb-[7px] text-[29px] font-extrabold max-[480px]:text-[25px]">تسجيل الدخول</h1>
-              <p className="text-[13px] text-text-muted">أدخل معلوماتك للوصول إلى حسابك.</p>
+              <h1 className="mb-[7px] text-[29px] font-extrabold max-[480px]:text-[25px]">{v.title}</h1>
+              <p className="text-[13px] text-text-muted">{v.subtitle}</p>
             </div>
 
             {message && (
@@ -239,6 +286,11 @@ export default function Login() {
                 }
               >
                 {message.text}
+                {message.text === v.wrongRoleText && (
+                  <Link to={v.otherDoor.to} className="mr-1 font-extrabold underline underline-offset-2">
+                    {v.otherDoor.label}
+                  </Link>
+                )}
               </div>
             )}
 
@@ -323,7 +375,9 @@ export default function Login() {
                 )}
               </button>
 
-              {/* GOOGLE */}
+              {/* GOOGLE — students only */}
+              {!isProf && (
+              <>
               <div className="mt-5 mb-4 flex items-center gap-3 text-[12px] text-text-muted before:h-px before:flex-1 before:bg-card-border before:content-[''] after:h-px after:flex-1 after:bg-card-border after:content-['']">
                 <span>أو</span>
               </div>
@@ -337,14 +391,22 @@ export default function Login() {
                 <i className="fa-brands fa-google text-[16px]"></i>
                 <span>المتابعة باستخدام Google</span>
               </button>
+              </>
+              )}
             </form>
 
-            <div className="mt-[25px] text-center text-[12px] text-text-muted">
-              ما عندكش حساب؟
-              <Link to="/register" className="mr-1 font-extrabold text-primary-violet hover:text-electric-violet">
-                إنشاء حساب جديد
-              </Link>
-            </div>
+            {isProf ? (
+              <div className="mt-[25px] text-center text-[12px] text-text-muted">
+                حسابات الأساتذة يجهّزها فريق Yak Academy.
+              </div>
+            ) : (
+              <div className="mt-[25px] text-center text-[12px] text-text-muted">
+                ما عندكش حساب؟
+                <Link to="/register" className="mr-1 font-extrabold text-primary-violet hover:text-electric-violet">
+                  إنشاء حساب جديد
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       </main>

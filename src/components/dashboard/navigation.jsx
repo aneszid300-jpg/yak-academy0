@@ -68,9 +68,21 @@ export const NAV_ITEMS = [
     children: [{ label: "مواضيع البكالوريا", path: "/dashboard/library", view: null }],
   },
   {
+    // TEMPORARY, for testing: grant course access until the admin dashboard exists.
+    key: "access",
+    label: "منح الوصول (تجريبي)",
+    to: "/dashboard/access",
+    icon: icon(
+      <>
+        <rect x="3" y="11" width="18" height="11" rx="2" />
+        <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+      </>
+    ),
+  },
+  {
     // New with payments: the student's purchase centre.
     key: "wallet",
-    label: "محفظتي",
+    label: "مشترياتي",
     to: "/dashboard/wallet",
     icon: icon(
       <>
@@ -108,7 +120,11 @@ const SECTION_BY_SEGMENT = {
   flash: "ai",
   library: "library",
   pdf: "library",
+  welcome: "settings", // opened again from الإعدادات
+  thanks: "settings", // kept in الإعدادات
+  access: "access",
   wallet: "wallet",
+  live: "home", // a live session is opened from Home
   settings: "settings",
 };
 

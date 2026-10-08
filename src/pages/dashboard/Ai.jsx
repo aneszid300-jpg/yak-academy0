@@ -2,15 +2,18 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { AI_DECKS, AI_TABS } from "../../data/ai.js";
 import StickerNotebook from "../../components/dashboard/StickerNotebook.jsx";
 import { unitLock, useCoursesAccess } from "../../features/payments/courseAccess.js";
+import { useCourseCheckout } from "../../components/dashboard/courses/useCourseCheckout.jsx";
 
 // Decks are not sold: each comes with its unit (deck.courseId). A deck whose
-// unit the student has not bought is shown locked and leads to that UNIT's
-// checkout. While access is still loading, decks look as before and the
-// flashcards route's own gate decides.
+// unit the student has not bought is shown locked and opens that UNIT's
+// purchase window (useCourseCheckout, same as a course card); a unit under
+// review leads to «محفظتي» where the request's status shows. While access is
+// still loading, decks look as before and the flashcards route's own gate
+// (RequireDeckAccess) decides before any question is shown.
 const DECK_LOCKS = {
   unavailable: { badge: "ستتوفر ضمن وحدتها قريباً", action: null },
-  review: { badge: "الوحدة قيد المراجعة", action: "عرض الطلب" },
-  locked: { badge: "متاحة بعد شراء الوحدة", action: "شراء الوحدة" },
+  review: { badge: "الدورة قيد المراجعة", action: "عرض الطلب" },
+  locked: { badge: "متاحة بعد الانضمام للدورة", action: "انضم للدورة" },
 };
 const deckLock = (deck, access) => DECK_LOCKS[unitLock(deck.courseId, access)] || null;
 
@@ -42,6 +45,7 @@ export default function Ai() {
   const { pathname, search } = useLocation();
   const view = params.get("view") === "my" ? "my" : "all"; // unknown views fall back to «الكل» (as Courses)
   const access = useCoursesAccess();
+  const checkout = useCourseCheckout(pathname + search);
 
   return (
     <section className="ai-page">
@@ -80,11 +84,14 @@ export default function Ai() {
             // «رجوع» on the flashcards returns to this exact view (e.g. ?view=my).
             onOpen={(deck) => navigate(`/dashboard/flash/${deck.id}`, { state: { from: pathname + search } })}
             getLock={(deck) => deckLock(deck, access)}
-            onLocked={(deck) =>
-              navigate(deck.courseId ? `/dashboard/payment/course/${deck.courseId}` : `/dashboard/flash/${deck.id}`, { state: { from: pathname + search } })
-            }
+            onLocked={(deck) => {
+              const lock = unitLock(deck.courseId, access);
+              if (lock === "review") navigate("/dashboard/wallet");
+              else if (lock === "locked") checkout.open(deck.courseId);
+            }}
           />
         </div>
+        {checkout.modal}
       </div>
     </section>
   );

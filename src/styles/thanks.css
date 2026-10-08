@@ -1,0 +1,160 @@
+/* =========================================================
+   رسالة الشكر (/dashboard/thanks) — after a course is bought: a sealed
+   paper envelope opens (seal → flap → letter rises), then the letter on the
+   same paper: letterhead, text, signature and gold seal. Transforms/opacity
+   only; off with prefers-reduced-motion.
+   ========================================================= */
+
+.ty-page {
+  /* paper grain (fine fibres) + soft mottling, laid over every face */
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .22  0 0 0 0 .14  0 0 0 0 .32  0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
+  --mottle: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23m)'/></svg>");
+  --mottle-soft: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23m)'/></svg>");
+  flex: 1 0 auto; min-width: 0; overflow-x: clip; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 32px); padding: 24px 12px; }
+
+@keyframes ty-arrive { from { opacity: 0; transform: translateY(24px) scale(.95); } to { opacity: 1; transform: none; } }
+@keyframes ty-unfold { from { opacity: 0; transform: translateY(40px) rotate(-1deg) scaleY(.35); } 60% { opacity: 1; } to { opacity: 1; transform: rotate(-1deg); } }
+@keyframes ty-stamp { from { opacity: 0; transform: scale(1.8) rotate(30deg); } to { opacity: 1; transform: rotate(12deg); } }
+@keyframes ty-write { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes ty-leave { to { opacity: 0; transform: translateY(40px) scale(.94); } }
+@keyframes ty-place { from { opacity: 0; transform: translateY(-36px) rotate(-9deg) scale(1.04); } 70% { opacity: 1; } to { opacity: 1; transform: rotate(-2deg); } }
+@keyframes ty-lining { 0%, 49% { background: var(--grain), var(--mottle-soft), linear-gradient(135deg, #8659E8 0%, #7B4FE0 60%, #7048D6 100%); } 50%, 100% { background: var(--grain), linear-gradient(0deg, #3B2380, #4A2C96); } }
+@keyframes ty-break { 0% { transform: scale(1) rotate(-8deg); opacity: 1; } 30% { transform: scale(1.14) rotate(-4deg); opacity: 1; } 100% { transform: scale(0) rotate(-48deg); opacity: 0; } }
+@keyframes ty-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- the envelope: matte paper, real folds ---------- */
+.ty-stage { display: flex; flex-direction: column; align-items: center; gap: 22px; animation: ty-arrive .8s cubic-bezier(.16, 1, .3, 1) both; }
+/* once the paper is out, the envelope sinks away and the letter takes its place */
+.ty-stage.is-opening { animation: ty-leave .35s 1.3s cubic-bezier(.5, 0, .75, 0) forwards; }
+.ty-env {
+  position: relative; display: block; width: min(470px, calc(100vw - 48px)); aspect-ratio: 1.5; padding: 0; border: none; background: none; font-family: inherit; cursor: pointer; perspective: 1200px;
+  transform: rotate(-2deg); transition: transform .35s cubic-bezier(.2, .8, .25, 1), filter .35s;
+  animation: ty-place .9s .1s cubic-bezier(.2, .8, .25, 1) backwards;
+  filter: drop-shadow(0 16px 22px rgba(52, 32, 92, .28)) drop-shadow(0 2px 3px rgba(52, 32, 92, .22));
+}
+.ty-env:not(.is-opening):hover { transform: rotate(-2deg) translateY(-4px); filter: drop-shadow(0 22px 28px rgba(52, 32, 92, .3)) drop-shadow(0 2px 3px rgba(52, 32, 92, .2)); }
+.ty-env:focus-visible { outline: 3px solid var(--electric-violet); outline-offset: 8px; border-radius: 8px; }
+
+/* inside of the envelope (seen once the flap lifts) */
+.ty-env-back { position: absolute; inset: 0; overflow: hidden; border-radius: 6px; background: var(--grain), linear-gradient(180deg, #3B2380, #4A2C96); }
+.ty-env-back::after { content: ""; position: absolute; inset: 0; background: #fff; opacity: .1; -webkit-mask: url("../assets/images/yak-mark.png") 0 0 / 30px 30px repeat; mask: url("../assets/images/yak-mark.png") 0 0 / 30px 30px repeat; }
+/* the letter inside: hidden by the folds, rises when the envelope opens */
+.ty-env-paper { position: absolute; left: 6%; right: 6%; top: 6%; bottom: 5%; z-index: 1; display: flex; flex-direction: column; gap: 9px; padding: 18px 20px; border-radius: 3px; background: var(--mottle), #FFFDF8; box-shadow: 0 3px 8px rgba(40, 20, 70, .18); transition: transform .7s .65s cubic-bezier(.2, .8, .25, 1); }
+.ty-env-paper-title { font-family: 'Aref Ruqaa', var(--font-auth); font-size: 22px; font-weight: 700; line-height: 1.2; color: var(--primary-violet); text-align: start; }
+.ty-env-paper-line { height: 6px; border-radius: 3px; background: rgba(123, 79, 224, .16); }
+.ty-env-paper-line.is-short { width: 55%; }
+
+/* folds: the wrapper casts the soft edge shadow, the inner span is the clipped paper */
+.ty-fold { position: absolute; inset: 0; pointer-events: none; }
+.ty-fold > span { position: absolute; inset: 0; border-radius: 6px; }
+.ty-fold.is-left { z-index: 2; filter: drop-shadow(1px 0 1.5px rgba(40, 20, 80, .22)) drop-shadow(.5px -.5px 0 rgba(255, 255, 255, .35)); }
+.ty-fold.is-left > span { clip-path: polygon(0 0, 53% 57%, 0 100%); background: var(--grain), var(--mottle-soft), linear-gradient(135deg, #7E54E3 0%, #6A45CC 100%); }
+.ty-fold.is-right { z-index: 2; filter: drop-shadow(-1px 0 1.5px rgba(40, 20, 80, .22)) drop-shadow(-.5px -.5px 0 rgba(255, 255, 255, .25)); }
+.ty-fold.is-right > span { clip-path: polygon(100% 0, 47% 57%, 100% 100%); background: var(--grain), var(--mottle-soft), linear-gradient(135deg, #6C47CC 0%, #5B3AA6 100%); }
+.ty-fold.is-bottom { z-index: 3; filter: drop-shadow(0 -1.5px 2px rgba(40, 20, 80, .24)) drop-shadow(0 -.6px 0 rgba(255, 255, 255, .4)); }
+.ty-fold.is-bottom > span { clip-path: polygon(0 100%, 50% 47%, 100% 100%); background: var(--grain), var(--mottle-soft), linear-gradient(135deg, #7550DA 0%, #6040B2 100%); }
+
+/* the top flap: folds back when the seal breaks */
+.ty-env-flap { position: absolute; left: 0; right: 0; top: 0; height: 62%; z-index: 4; transform-origin: top center; transition: transform .6s .25s cubic-bezier(.45, .05, .35, 1), z-index 0s .55s; filter: drop-shadow(0 3px 3px rgba(40, 20, 80, .3)) drop-shadow(0 .6px 0 rgba(255, 255, 255, .3)); pointer-events: none; }
+.ty-env-flap > span { position: absolute; inset: 0; border-radius: 6px 6px 0 0; clip-path: polygon(0 0, 100% 0, 50% 100%); background: var(--grain), var(--mottle-soft), linear-gradient(135deg, #8659E8 0%, #7B4FE0 60%, #7048D6 100%); }
+
+/* the thread under the seal, trailing out of the envelope */
+.ty-thread { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 5; overflow: visible; pointer-events: none; transition: opacity .3s; }
+.ty-thread path { fill: none; stroke: #D9AA0E; stroke-width: 2.4; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.ty-thread .ty-thread-tail { stroke-width: 2.2; }
+.ty-thread .ty-thread-shadow { stroke: rgba(40, 20, 70, .28); stroke-width: 3; transform: translate(.4px, .9px); filter: blur(1px); }
+
+/* wax seal (assets/images/yak-wax-seal.png — real wax, the Yak mark pressed in), set by hand: a little tilted */
+.ty-seal { position: absolute; left: 50%; top: 58%; z-index: 6; width: 92px; aspect-ratio: 343 / 360; margin: -48px 0 0 -46px; background: url("../assets/images/yak-wax-seal.png") center / contain no-repeat; transform: rotate(-8deg); filter: drop-shadow(0 5px 6px rgba(40, 20, 50, .4)) drop-shadow(0 1px 1px rgba(40, 20, 50, .35)); transition: transform .3s cubic-bezier(.5, -.4, .7, .4), opacity .3s; }
+
+/* light from the top-left over the whole envelope, like a photo on a table */
+.ty-env-light { position: absolute; inset: 0; z-index: 7; border-radius: 6px; pointer-events: none; background: radial-gradient(130% 100% at 100% 0%, rgba(255, 255, 255, .14), transparent 55%), radial-gradient(120% 90% at 15% 0%, rgba(255, 255, 255, .08), transparent 55%); transition: opacity .3s; }
+
+/* addressed by hand, in ink */
+.ty-env-to { position: absolute; right: 24px; bottom: 14px; z-index: 7; display: flex; flex-direction: column; align-items: flex-start; font-family: 'Aref Ruqaa', var(--font-auth); font-size: 22px; font-weight: 700; line-height: 1.3; color: #fff; text-shadow: 0 2px 8px rgba(20, 8, 50, .3); transition: opacity .3s; }
+.ty-env-to small { font-family: var(--font-auth); font-size: 11.5px; font-weight: 700; color: rgba(255, 255, 255, .8); text-shadow: none; }
+
+.ty-env.is-opening .ty-seal { transform: scale(0); opacity: 0; animation: ty-break .45s cubic-bezier(.5, 0, .75, 0) both; }
+.ty-env.is-opening .ty-env-flap > span { background: var(--grain), linear-gradient(0deg, #3B2380, #4A2C96); animation: ty-lining .6s .25s linear both; }
+.ty-env.is-opening .ty-env-flap { transform: rotateX(180deg); z-index: 0; }
+.ty-env.is-opening .ty-env-paper { transform: translateY(-58%); }
+.ty-env.is-opening .ty-env-to, .ty-env.is-opening .ty-thread, .ty-env.is-opening .ty-env-light { opacity: 0; }
+/* hover: the seal invites the click */
+.ty-env:not(.is-opening):hover .ty-seal { transform: scale(1.06) rotate(-8deg); }
+
+.ty-hint { margin: 30px 0 0; font-family: 'Aref Ruqaa', var(--font-auth); font-size: 22px; font-weight: 700; color: var(--primary-violet); }
+.ty-open-btn { height: 42px; padding: 0 24px; border: none; border-radius: 999px; background: linear-gradient(135deg, var(--electric-violet), var(--primary-violet)); color: #fff; font-family: var(--font-auth); font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 22px rgba(91, 58, 166, .28); transition: transform .15s, opacity .2s; }
+.ty-open-btn:hover { transform: translateY(-1px); }
+.ty-open-btn:disabled { opacity: .5; cursor: default; transform: none; }
+.ty-open-btn:focus-visible { outline: 2px solid var(--electric-violet); outline-offset: 3px; }
+
+/* ---------- the letter: the same paper as the envelope ---------- */
+.ty-result { position: relative; display: flex; flex-direction: column; align-items: center; gap: 22px; width: min(540px, calc(100vw - 40px)); }
+.ty-letter {
+  /* ink on paper: the same in light and dark mode */
+  --ink: #2D2440; --primary-violet: #5B3AA6; --electric-violet: #7B4FE0;
+  position: relative; width: 100%; padding: 26px 30px 24px; border-radius: 3px; color: var(--ink);
+  background: var(--mottle), #FFFDF8;
+  transform: rotate(-1deg); transform-origin: top center;
+  filter: drop-shadow(0 16px 22px rgba(52, 32, 92, .26)) drop-shadow(0 2px 3px rgba(52, 32, 92, .18));
+  animation: ty-unfold .9s cubic-bezier(.2, .8, .25, 1) both;
+}
+/* it was folded in three to fit the envelope: two soft creases */
+.ty-letter-folds { position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background:
+    linear-gradient(180deg, transparent calc(66.6% - 1px), rgba(60, 40, 90, .07) calc(66.6% - 1px) 66.6%, rgba(255, 255, 255, .7) 66.6% calc(66.6% + 1px), transparent calc(66.6% + 1px)); }
+
+/* letterhead */
+.ty-head { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid rgba(123, 79, 224, .18); }
+.ty-logo { height: 30px; width: auto; }
+.ty-date { font-size: 12px; font-weight: 700; color: #8A819C; }
+
+.ty-body { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.ty-body > * { animation: ty-rise .5s both; }
+.ty-body > :nth-child(1) { animation-delay: .5s; }
+.ty-body > :nth-child(2) { animation-delay: .62s; }
+.ty-body > :nth-child(3) { animation-delay: .74s; }
+.ty-body > :nth-child(4) { animation-delay: .88s; }
+.ty-body > :nth-child(5) { animation-delay: 1s; }
+.ty-body > :nth-child(6) { animation-delay: 1.1s; }
+.ty-title { margin: 0 0 2px; font-family: 'Aref Ruqaa', var(--font-auth); font-size: 28px; font-weight: 700; line-height: 1.4; word-spacing: .15em; color: var(--primary-violet); }
+.ty-line { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.95; color: var(--ink); opacity: .88; }
+.ty-line b { font-weight: 900; color: var(--primary-violet); }
+.ty-promise { margin: 4px 0 0; font-size: 14.5px; font-weight: 800; line-height: 1.85; }
+
+/* signed and sealed */
+.ty-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-top: 12px; }
+.ty-sign { display: flex; flex-direction: column; align-items: flex-start; }
+.ty-sign-by { font-family: 'Aref Ruqaa', var(--font-auth); font-size: 16px; font-weight: 700; color: var(--primary-violet); }
+.ty-signature { display: block; width: 130px; aspect-ratio: 3; margin: 2px 0; background: var(--primary-violet); -webkit-mask: url("../assets/images/yak-signature.png") left center / contain no-repeat; mask: url("../assets/images/yak-signature.png") left center / contain no-repeat; animation: ty-write 1.4s 1.2s cubic-bezier(.45, .05, .35, 1) both; }
+.ty-sign b { font-family: 'Aref Ruqaa', var(--font-auth); font-size: 16px; font-weight: 700; word-spacing: .25em; color: var(--primary-violet); }
+.ty-letter-seal { flex-shrink: 0; width: 64px; aspect-ratio: 343 / 360; background: url("../assets/images/yak-wax-seal.png") center / contain no-repeat; transform: rotate(12deg); filter: drop-shadow(0 4px 5px rgba(40, 20, 50, .35)); animation: ty-stamp .5s 1.5s cubic-bezier(.3, 1.6, .5, 1) both; }
+
+.ty-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; animation: ty-rise .5s 1.2s both; }
+.ty-start { display: inline-flex; align-items: center; height: 44px; padding: 0 26px; border-radius: 999px; background: linear-gradient(135deg, var(--electric-violet), var(--primary-violet)); color: #fff; font-family: var(--font-auth); font-size: 14.5px; font-weight: 800; text-decoration: none; box-shadow: 0 10px 22px rgba(91, 58, 166, .28); transition: transform .15s, box-shadow .2s; }
+.ty-start:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(91, 58, 166, .34); }
+.ty-replay { display: inline-flex; align-items: center; text-decoration: none; height: 44px; padding: 0 20px; border: 1px solid var(--card-border); border-radius: 999px; background: var(--card-bg); color: var(--primary-violet); font-family: var(--font-auth); font-size: 13.5px; font-weight: 800; cursor: pointer; transition: border-color .2s; }
+.ty-replay:hover { border-color: var(--electric-violet); }
+.ty-start:focus-visible, .ty-replay:focus-visible { outline: 2px solid var(--electric-violet); outline-offset: 3px; }
+
+/* ---------- small screens ---------- */
+@media (max-width: 640px) {
+  .ty-env-to { right: 16px; bottom: 10px; font-size: 19px; }
+  .ty-env-to small { font-size: 10.5px; }
+  .ty-seal { width: 74px; margin: -39px 0 0 -37px; }
+  .ty-letter { padding: 20px 18px 18px; }
+  .ty-logo { height: 26px; }
+  .ty-title { font-size: 24px; }
+  .ty-line { font-size: 13.5px; }
+  .ty-promise { font-size: 14px; }
+  .ty-letter-seal { width: 54px; }
+}
+
+[data-theme="dark"] .ty-hint, [data-theme="dark"] .ty-replay { color: #C4B5FD; }
+[data-theme="dark"] .ty-letter { filter: drop-shadow(0 16px 22px rgba(0, 0, 0, .5)) drop-shadow(0 2px 3px rgba(0, 0, 0, .4)); }
+[data-theme="dark"] .ty-env { filter: drop-shadow(0 16px 22px rgba(0, 0, 0, .5)) drop-shadow(0 2px 3px rgba(0, 0, 0, .4)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ty-stage, .ty-stage.is-opening, .ty-env, .ty-letter, .ty-body > *, .ty-actions, .ty-signature, .ty-letter-seal { animation: none; }
+  .ty-env, .ty-env-flap, .ty-env-paper, .ty-seal { transition: none; }
+}
